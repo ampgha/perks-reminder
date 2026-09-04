@@ -51,6 +51,32 @@ describe('static catalog', () => {
     }));
   });
 
+  it('defines the Citi Strata Premier annual hotel benefit as a calendar-year credit', () => {
+    const card = getPublicStaticCardByName('Citi Strata Premier® Card');
+
+    expect(card).toEqual(expect.objectContaining({
+      catalogKey: 'card:citi-strata-premier',
+      issuer: 'Citi',
+      annualFee: 95,
+      imageUrl: '/images/cards/citi-strata-premier-card.webp',
+    }));
+    expect(card?.benefits).toEqual([
+      expect.objectContaining({
+        catalogKey: 'benefit:citi-strata-premier:up-to-100-annual-hotel-benefit-500-stay-through-citi-travel',
+        parentCatalogKey: 'card:citi-strata-premier',
+        maxAmount: 100,
+        frequency: 'YEARLY',
+        cycleAlignment: 'CALENDAR_FIXED',
+        fixedCycleStartMonth: 1,
+        fixedCycleDurationMonths: 12,
+        usageWay: {
+          slug: 'citi-travel-hotel-benefit',
+          title: 'How to Use Citi Travel Hotel Benefits',
+        },
+      }),
+    ]);
+  });
+
   it('keeps annual value and suggestions available without a database', () => {
     expect(calculateAnnualBenefitValue(10, 'MONTHLY')).toBe(120);
     expect(getStaticSearchSuggestions()).toEqual(expect.arrayContaining(['American Express', 'Dining', 'amex']));

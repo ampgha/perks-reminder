@@ -1,0 +1,37 @@
+{
+  "$schema": "../schema.json",
+  "name": "Citi Strata Premier® Card",
+  "issuer": "Citi",
+  "annualFee": 95,
+  "imageUrl": "/images/cards/citi-strata-premier-card.webp",
+  "sources": [
+    {
+      "label": "Citi Strata Premier official product page",
+      "url": "https://www.citi.com/credit-cards/citi-strata-premier-credit-card",
+      "accessed": "2026-09-04"
+    },
+    {
+      "label": "Citi Strata Premier official guide to benefits",
+      "url": "https://www.citi.com/credit-cards/credit-card-rewards/citi-strata-premier-benefits",
+      "accessed": "2026-09-04"
+    },
+    {
+      "label": "Citi Strata Premier official card agreement and benefit terms",
+      "url": "https://www.cardbenefits.citi.com/-/media/CPP/Files/LegalDocs/TermsAndConditions/PID89_StrataPremier_CRE370_TandC_0425_tagged.ashx",
+      "accessed": "2026-09-04"
+    }
+  ],
+  "benefits": [
+    {
+      "description": "Up to $100 Annual Hotel Benefit ($500+ stay through Citi Travel)",
+      "category": "Travel",
+      "maxAmount": 100,
+      "frequency": "YEARLY",
+      "cycleAlignment": "CALENDAR_FIXED",
+      "fixedCycleStartMonth": 1,
+      "fixedCycleDurationMonths": 12,
+      "notes": "Once per calendar year, receive $100 off a single hotel stay of $500 or more, excluding taxes and fees, booked through Citi Travel. The discount is applied at booking."
+    }
+  ],
+  "reviewNotes": "Trackable-benefit scope intentionally excludes the welcome offer, earning multipliers, transfer partners, travel protections, and other always-on card features. Catalog synchronization disposition: the new immutable card and benefit keys should plan as creates in a later separately authorized sync; no database sync is part of this contribution. Existing-card propagation disposition: after that authorized sync, normal insert-only materialization should add the missing current benefit status to linked active physical cards without rewriting user state. Benefit Usage Guide disposition: link this benefit to the existing citi-travel-hotel-benefit guide. Prior-status disposition: there are no prior statuses for this genuinely new catalog identity; preserve any unrelated legacy or custom rows for separate adoption review. Image provenance: official Citi product asset at https://aemapi.citi.com/content/dam/cfs/uspb/usmkt/cards/en/static/images/citi-strata-premier-credit-card/citi-strata-premier-credit-card_306x192.webp, accessed 2026-09-04."
+}

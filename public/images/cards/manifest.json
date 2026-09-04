@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-04T09:37:21.426Z",
+  "updatedAt": "2026-09-04T09:37:47.000Z",
   "images": [
     {
       "cardName": "alaska-airlines-visa-signature-credit-card",
@@ -309,6 +309,20 @@
       "duplicates": [],
       "overwritten": true,
       "ingestedAt": "2026-09-04T09:37:21.414Z"
+    },
+    {
+      "cardName": "citi-strata-premier-card",
+      "filename": "citi-strata-premier-card.webp",
+      "path": "/images/cards/citi-strata-premier-card.webp",
+      "source": "issuer-official-product-page",
+      "sourceUrl": "https://aemapi.citi.com/content/dam/cfs/uspb/usmkt/cards/en/static/images/citi-strata-premier-credit-card/citi-strata-premier-credit-card_306x192.webp",
+      "width": 324,
+      "height": 216,
+      "type": "webp",
+      "sizeBytes": 27910,
+      "sha256": "18a43fad07b4f37fee756c0414bdd38c2d81484e8cf4ab2e8db3caab2357561d",
+      "duplicates": [],
+      "ingestedAt": "2026-09-04T09:37:47.000Z"
     },
     {
       "cardName": "delta-skymiles-gold-american-express-card",
