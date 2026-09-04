@@ -3,7 +3,7 @@
   "name": "Sephora Credit Card",
   "issuer": "Comenity Capital Bank",
   "annualFee": 0,
-  "imageUrl": "/images/cards/sephora-credit-card.png",
+  "imageUrl": null,
   "sources": [
     {
       "label": "Sephora Credit Card FAQ",
@@ -14,8 +14,13 @@
       "label": "Comenity Sephora Credit Card agreement",
       "url": "https://d.comenity.net/legaldocs/sephoracard/legal-documents/schumerbox",
       "accessed": "2026-09-04"
+    },
+    {
+      "label": "NerdWallet 2026 Sephora credit card overview",
+      "url": "https://www.nerdwallet.com/credit-cards/learn/sephora-credit-card",
+      "accessed": "2026-09-04"
     }
   ],
   "benefits": [],
-  "reviewNotes": "This entry represents the closed-loop Sephora Credit Card requested by name. Sephora also issues separate Visa and Visa Signature products, and applicants cannot select which product they receive; the user's physical product must be confirmed before an upstream PR is opened. There is no annual fee. The 4% rewards program and Beauty Insider points are purchase-derived earnings, while the first-purchase discount and initial outside-spend offer are signup benefits, so none are recurring tracked benefits. Global synchronization disposition: create card:sephora-credit-card; there are no benefit definitions, statuses, or Benefit Usage Guide links to propagate. A local image is deferred until the exact physical variant is confirmed; imageUrl records the intended future path only."
+  "reviewNotes": "This entry represents the closed-loop Sephora Credit Card requested by name. Sephora also issues separate Visa and Visa Signature products, and applicants cannot select which product they receive; the user's physical product must be confirmed before an upstream PR is opened. There is no annual fee. The 4% rewards program and Beauty Insider points are purchase-derived earnings, while the first-purchase discount and initial outside-spend offer are signup benefits, so none are recurring tracked benefits. Global synchronization disposition: create card:sephora-credit-card; there are no benefit definitions, statuses, or Benefit Usage Guide links to propagate. Card art is intentionally null until the exact physical variant is confirmed."
 }
