@@ -1,0 +1,30 @@
+{
+  "$schema": "../schema.json",
+  "name": "Ink Business Unlimited Credit Card",
+  "issuer": "Chase",
+  "annualFee": 0,
+  "imageUrl": "/images/cards/ink-business-unlimited-credit-card.png",
+  "sources": [
+    {
+      "label": "Chase Ink Business Unlimited official product page and offer terms",
+      "url": "https://creditcards.chase.com/business-credit-cards/ink/unlimited",
+      "accessed": "2026-09-04"
+    },
+    {
+      "label": "Instacart official Chase Ink benefit page",
+      "url": "https://www.instacart.com/p/chase-ink",
+      "accessed": "2026-09-04"
+    }
+  ],
+  "benefits": [
+    {
+      "description": "$20 Monthly Instacart Credit (active Instacart+ membership required; through 12/31/2027)",
+      "category": "Food Delivery",
+      "maxAmount": 20,
+      "frequency": "MONTHLY",
+      "cycleAlignment": "CALENDAR_FIXED",
+      "notes": "Activation and an active Instacart+ membership are required. The first three months of membership are complimentary, but the monthly credit can continue with an active paid membership afterward. The current model cannot delay materialization until activation, test whether membership remains active, or automatically stop eligibility on December 31, 2027."
+    }
+  ],
+  "reviewNotes": "The product is currently marketed with a $0 annual fee. The complimentary Instacart+ membership itself is not assigned a speculative cash value. Its three-month duration describes free membership pricing, not a three-credit cap: official terms provide a $20 credit each month while an activated Instacart+ membership remains active, including a paid membership after the complimentary period. MONTHLY is therefore the least-inaccurate supported representation, but the model cannot delay materialization until activation, test active membership, enforce monthly non-rollover, or automatically stop eligibility on December 31, 2027. The benefit must be reviewed and retired from future materialization after 12/31/2027; prior statuses must remain visible and unchanged. The image is official Chase card art from https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/ink_unlimited_card.png. Rollout disposition: global synchronization should create one card and one benefit; missing statuses should then be propagated insert-only to existing active physical cards linked to this product. Guide disposition: the description maps to the existing delivery-grocery-credits guide. No database synchronization, status propagation, retirement, or guide audit was run as part of this intake."
+}

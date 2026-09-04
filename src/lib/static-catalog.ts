@@ -52,7 +52,7 @@ export interface PublicStaticCard extends Omit<StaticPredefinedCard, 'benefits'>
   updatedAt: string;
 }
 
-export const STATIC_CATALOG_UPDATED_AT = '2026-08-27';
+export const STATIC_CATALOG_UPDATED_AT = '2026-09-04';
 
 export const predefinedCardsData = [
     {
@@ -275,6 +275,25 @@ export const predefinedCardsData = [
       annualFee: 95,
       imageUrl: '/images/cards/chase-ink-business-preferred.jpg',
       benefits: [],
+    },
+    {
+      catalogKey: 'card:ink-business-unlimited',
+      name: 'Ink Business Unlimited Credit Card',
+      issuer: 'Chase',
+      annualFee: 0,
+      imageUrl: '/images/cards/ink-business-unlimited-credit-card.png',
+      benefits: [
+        {
+          catalogKey: 'benefit:ink-business-unlimited:20-monthly-instacart-credit-through-2027',
+          parentCatalogKey: 'card:ink-business-unlimited',
+          description: '$20 Monthly Instacart Credit (active Instacart+ membership required; through 12/31/2027)',
+          category: 'Food Delivery',
+          maxAmount: 20,
+          frequency: 'MONTHLY',
+          cycleAlignment: 'CALENDAR_FIXED',
+          percentage: 0,
+        },
+      ],
     },
     americanExpressCardCatalog["American Express Platinum Card"],
     americanExpressCardCatalog["American Express Business Platinum Card"],

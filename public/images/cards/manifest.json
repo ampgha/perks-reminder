@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-16T20:15:50.608Z",
+  "updatedAt": "2026-09-04T09:44:34.631Z",
   "images": [
     {
       "cardName": "alaska-airlines-visa-signature-credit-card",
@@ -448,6 +448,21 @@
       "sha256": "23e71bfcd9dc282646f276a825035ecd62ef8324b0e62359684af79fbc50040d",
       "duplicates": [],
       "validatedAt": "2026-05-16T20:15:50.600Z"
+    },
+    {
+      "cardName": "Ink Business Unlimited Credit Card",
+      "filename": "ink-business-unlimited-credit-card.png",
+      "path": "/images/cards/ink-business-unlimited-credit-card.png",
+      "source": "direct-url",
+      "sourceUrl": "https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/ink_unlimited_card.png",
+      "width": 289,
+      "height": 181,
+      "type": "png",
+      "sizeBytes": 69151,
+      "sha256": "ae3b185ab509d6841b268b7344a4c0e9b50c8a77320beec0254a86c22c17e593",
+      "duplicates": [],
+      "overwritten": true,
+      "ingestedAt": "2026-09-04T09:44:34.618Z"
     },
     {
       "cardName": "marriott-bonvoy-brilliant-american-express-card",
