@@ -52,7 +52,7 @@ export interface PublicStaticCard extends Omit<StaticPredefinedCard, 'benefits'>
   updatedAt: string;
 }
 
-export const STATIC_CATALOG_UPDATED_AT = '2026-08-27';
+export const STATIC_CATALOG_UPDATED_AT = '2026-09-04';
 
 export const predefinedCardsData = [
     {
@@ -121,6 +121,16 @@ export const predefinedCardsData = [
           percentage: 0,
         },
       ],
+    },
+    {
+      catalogKey: 'card:west-elm-key-rewards-visa',
+      name: 'West Elm Key Rewards® Visa',
+      issuer: 'Capital One',
+      annualFee: 0,
+      imageUrl: '/images/cards/west-elm-key-rewards-visa.png',
+      // The $25 birthday certificate needs a user-birthday/issuance cycle anchor,
+      // which the standard catalog model cannot currently represent faithfully.
+      benefits: [],
     },
     {
       catalogKey: 'card:csr',

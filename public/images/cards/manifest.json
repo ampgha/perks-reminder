@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-16T20:15:50.608Z",
+  "updatedAt": "2026-09-04T09:42:26.000Z",
   "images": [
     {
       "cardName": "alaska-airlines-visa-signature-credit-card",
@@ -490,6 +490,20 @@
       "sha256": "5a5c5ac63f1cbd478a3ede3f69e87efe3acd3f2d57a6f3599235ea76c3c36693",
       "duplicates": [],
       "validatedAt": "2026-05-16T20:15:50.601Z"
+    },
+    {
+      "cardName": "west-elm-key-rewards-visa",
+      "filename": "west-elm-key-rewards-visa.png",
+      "path": "/images/cards/west-elm-key-rewards-visa.png",
+      "source": "issuer-official-product-page",
+      "sourceUrl": "https://ecm.capitalone.com/WCM/card/products/we_ca_cb_rgb.png",
+      "width": 1014,
+      "height": 639,
+      "type": "png",
+      "sizeBytes": 60139,
+      "sha256": "d737ead68a4ed4406ee20f379d13567a5d8c7de1e6565efa31bbaaf0a1d02c32",
+      "duplicates": [],
+      "ingestedAt": "2026-09-04T09:42:26.000Z"
     }
   ]
 }
