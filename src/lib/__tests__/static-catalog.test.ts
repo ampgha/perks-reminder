@@ -10,6 +10,18 @@ import {
 } from '../static-catalog';
 
 describe('static catalog', () => {
+  it('includes Wells Fargo Autograph without modeling uncapped rewards as a benefit', () => {
+    expect(predefinedCardsData.find((card) => card.catalogKey === 'card:wells-fargo-autograph'))
+      .toEqual({
+        catalogKey: 'card:wells-fargo-autograph',
+        name: 'Wells Fargo Autograph Card',
+        issuer: 'Wells Fargo',
+        annualFee: 0,
+        imageUrl: '/images/cards/wells-fargo-autograph-card.png',
+        benefits: [],
+      });
+  });
+
   it('projects predefined cards with stable public ids and usage-guide links', () => {
     const cards = getPublicStaticCards();
 
