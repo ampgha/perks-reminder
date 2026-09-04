@@ -6,6 +6,11 @@
   "imageUrl": "/images/cards/wells-fargo-autograph-card.png",
   "sources": [
     {
+      "label": "Wells Fargo credit card marketplace",
+      "url": "https://creditcards.wellsfargo.com/",
+      "accessed": "2026-09-04"
+    },
+    {
       "label": "Wells Fargo Autograph Visa application terms",
       "url": "https://www.wellsfargo.com/credit-cards/autograph-visa/terms/",
       "accessed": "2026-09-04"
@@ -14,8 +19,13 @@
       "label": "Visa Signature card listing",
       "url": "https://www.visa.com/en-us/card-finder/credit-card/signature",
       "accessed": "2026-09-04"
+    },
+    {
+      "label": "NerdWallet 2026 Wells Fargo Autograph review",
+      "url": "https://www.nerdwallet.com/credit-cards/reviews/wells-fargo-autograph",
+      "accessed": "2026-09-04"
     }
   ],
   "benefits": [],
-  "reviewNotes": "The legal product name is Wells Fargo Autograph Visa Card and its application terms list no annual fee. The welcome offer, uncapped 3X earning categories, transfer partners, cellular telephone protection, and other insurance/protection features are excluded by the recurring-benefit rules. Global synchronization disposition: create card:wells-fargo-autograph; there are no benefit definitions, existing-card statuses, or Benefit Usage Guide links to propagate. The prior marketing URL is no longer live, so current availability should be reconfirmed during upstream review; the Wells Fargo terms and Visa listing remained available on the access date. Card art is served by Visa's product-card image host and recorded in docs/card-image-sources.md."
+  "reviewNotes": "The legal product name is Wells Fargo Autograph Visa Card. Wells Fargo's current card marketplace provides an active application path and lists no annual fee; a recent independent review corroborates availability and the fee. The welcome offer, uncapped 3X earning categories, transfer partners, cellular telephone protection, and other insurance/protection features are excluded by the recurring-benefit rules. Global synchronization disposition: create card:wells-fargo-autograph; there are no benefit definitions, existing-card statuses, or Benefit Usage Guide links to propagate. Card art is served by Visa's product-card image host and recorded in docs/card-image-sources.md."
 }
