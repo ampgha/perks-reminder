@@ -1426,15 +1426,21 @@ Use Citi Travel and satisfy the qualifying booking requirement shown in the bene
 
 1. Book through Citi Travel while signed into the account with the eligible card.
 2. Confirm any minimum-spend or minimum-night requirement before checkout.
-3. Pay with the eligible Citi card.
+3. Use a payment method permitted by the eligible card's current terms.
 4. Keep the Citi Travel confirmation and final folio.
 5. Track whether the credit is applied at checkout or posts later as a statement credit.
+
+## Citi Strata Premier Rules
+
+For Citi Strata Premier, prepay the complete stay with the card, ThankYou Points, or a combination of both. If a reservation using the benefit is canceled and the cancellation is processed within the same calendar year, the benefit remains available for the rest of that year. If the cancellation is processed in a later calendar year, the benefit from the prior calendar year is forfeited.
+
+Do not assume another Citi card, including Citi Strata Elite, has identical payment or cancellation terms. Check the current terms for the card you are using.
 
 ## Practical Use
 
 - This is best for a planned paid hotel stay where Citi Travel pricing is competitive.
 - Compare the portal rate with the hotel direct rate before deciding.
-- If the benefit applies as a discount at booking, a refund may simply reverse the discounted transaction rather than create usable credit.
+- For Citi Strata Premier, leave enough time in the same calendar year to reuse the benefit after a canceled reservation.
 
 ## Watch Outs
 
@@ -1444,7 +1450,7 @@ Citi travel-portal hotel behavior has less public data than Amex and Chase hotel
 
 - Booking below the required spend or stay length
 - Assuming regular hotel direct bookings qualify
-- Assuming refund behavior will mirror Chase or Amex credits
+- Assuming payment or cancellation rules are identical across Citi cards
 - Forgetting to compare portal pricing`,
       tips: [
         'Use Citi Travel, not a hotel direct booking',

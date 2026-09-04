@@ -77,6 +77,24 @@ describe('static catalog', () => {
     ]);
   });
 
+  it('documents the Citi Strata Premier payment and cancellation rules without applying them to other Citi cards', () => {
+    const guide = benefitUsageWays.find(({ slug }) => slug === 'citi-travel-hotel-benefit');
+
+    expect(guide?.content).toContain(
+      'prepay the complete stay with the card, ThankYou Points, or a combination of both',
+    );
+    expect(guide?.content).toContain(
+      'the cancellation is processed within the same calendar year, the benefit remains available',
+    );
+    expect(guide?.content).toContain(
+      'the cancellation is processed in a later calendar year, the benefit from the prior calendar year is forfeited',
+    );
+    expect(guide?.content).toContain(
+      'Do not assume another Citi card, including Citi Strata Elite, has identical payment or cancellation terms',
+    );
+    expect(guide?.content).not.toContain('Pay with the eligible Citi card.');
+  });
+
   it('keeps annual value and suggestions available without a database', () => {
     expect(calculateAnnualBenefitValue(10, 'MONTHLY')).toBe(120);
     expect(getStaticSearchSuggestions()).toEqual(expect.arrayContaining(['American Express', 'Dining', 'amex']));
