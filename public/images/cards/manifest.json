@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-16T20:15:50.608Z",
+  "updatedAt": "2026-09-04T09:41:30.790Z",
   "images": [
     {
       "cardName": "alaska-airlines-visa-signature-credit-card",
@@ -490,6 +490,21 @@
       "sha256": "5a5c5ac63f1cbd478a3ede3f69e87efe3acd3f2d57a6f3599235ea76c3c36693",
       "duplicates": [],
       "validatedAt": "2026-05-16T20:15:50.601Z"
+    },
+    {
+      "cardName": "Wells Fargo Autograph Card",
+      "filename": "wells-fargo-autograph-card.png",
+      "path": "/images/cards/wells-fargo-autograph-card.png",
+      "source": "direct-url",
+      "sourceUrl": "https://cdn.prodstatic.com/shared/images/cards/2db3fbd0-91bd-11ed-8095-8b1b188a6198.jpg",
+      "width": 498,
+      "height": 315,
+      "type": "png",
+      "sizeBytes": 148828,
+      "sha256": "dc10433c1305a5e7f887c3e705a0c38a7d8c7888a069bd2d7aef052ce460dc12",
+      "duplicates": [],
+      "overwritten": true,
+      "ingestedAt": "2026-09-04T09:41:30.770Z"
     }
   ]
 }

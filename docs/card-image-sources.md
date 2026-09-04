@@ -4,6 +4,12 @@ High-resolution card art is usually sourced from issuer pages or community
 Apple Pay card-background captures. When replacing images from forum posts, keep
 the source URL here so future updates can verify provenance.
 
+## Card-network-hosted art
+
+| Local image | Source |
+| --- | --- |
+| `public/images/cards/wells-fargo-autograph-card.png` | https://cdn.prodstatic.com/shared/images/cards/2db3fbd0-91bd-11ed-8095-8b1b188a6198.jpg |
+
 ## US Card Forum Apple Pay Card Art
 
 Source thread: https://www.uscardforum.com/t/topic/29408
