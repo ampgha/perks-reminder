@@ -548,6 +548,21 @@
       "sha256": "d737ead68a4ed4406ee20f379d13567a5d8c7de1e6565efa31bbaaf0a1d02c32",
       "duplicates": [],
       "ingestedAt": "2026-09-04T09:42:26.000Z"
+    },
+    {
+      "cardName": "Wells Fargo Autograph Card",
+      "filename": "wells-fargo-autograph-card.png",
+      "path": "/images/cards/wells-fargo-autograph-card.png",
+      "source": "direct-url",
+      "sourceUrl": "https://cdn.prodstatic.com/shared/images/cards/2db3fbd0-91bd-11ed-8095-8b1b188a6198.jpg",
+      "width": 498,
+      "height": 315,
+      "type": "png",
+      "sizeBytes": 148828,
+      "sha256": "dc10433c1305a5e7f887c3e705a0c38a7d8c7888a069bd2d7aef052ce460dc12",
+      "duplicates": [],
+      "overwritten": true,
+      "ingestedAt": "2026-09-04T09:41:30.770Z"
     }
   ]
 }

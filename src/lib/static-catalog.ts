@@ -1054,6 +1054,14 @@ export const predefinedCardsData = [
       ],
     },
     {
+      catalogKey: 'card:wells-fargo-autograph',
+      name: 'Wells Fargo Autograph Card',
+      issuer: 'Wells Fargo',
+      annualFee: 0,
+      imageUrl: '/images/cards/wells-fargo-autograph-card.png',
+      benefits: [],
+    },
+    {
       catalogKey: 'card:bilt-blue',
       name: 'Bilt Blue Card',
       issuer: 'Bilt',

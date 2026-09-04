@@ -12,6 +12,12 @@ the source URL here so future updates can verify provenance.
 | `public/images/cards/chase-marriott-bonvoy-bold.png` | https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/marriott_bonvoy_bold_card_NAF.png |
 | `public/images/cards/capital-one-savor-cash-rewards-credit-card.png` | https://ecm.capitalone.com/WCM/card/products/new-savor-card-art/mobile.png |
 
+## Card-network-hosted art
+
+| Local image | Source |
+| --- | --- |
+| `public/images/cards/wells-fargo-autograph-card.png` | https://cdn.prodstatic.com/shared/images/cards/2db3fbd0-91bd-11ed-8095-8b1b188a6198.jpg |
+
 ## US Card Forum Apple Pay Card Art
 
 Source thread: https://www.uscardforum.com/t/topic/29408
