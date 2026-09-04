@@ -976,6 +976,14 @@ export const predefinedCardsData = [
       ],
     },
     {
+      catalogKey: 'card:city-national-cash-back',
+      name: 'City National Cash Back Credit Card',
+      issuer: 'City National Bank',
+      annualFee: 0,
+      imageUrl: '/images/cards/city-national-cash-back-credit-card.jpg',
+      benefits: [],
+    },
+    {
       catalogKey: 'card:bilt-blue',
       name: 'Bilt Blue Card',
       issuer: 'Bilt',

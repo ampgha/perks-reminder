@@ -1,0 +1,21 @@
+{
+  "$schema": "./schema.json",
+  "name": "City National Cash Back Credit Card",
+  "issuer": "City National Bank",
+  "annualFee": 0,
+  "imageUrl": "/images/cards/city-national-cash-back-credit-card.jpg",
+  "sources": [
+    {
+      "label": "City National Cash Back Credit Card product page",
+      "url": "https://www.cnb.com/personal-banking/lending/credit-cards/cash-back.html",
+      "accessed": "2026-09-04"
+    },
+    {
+      "label": "City National personal credit card overview",
+      "url": "https://www.cnb.com/personal-banking/lending/credit-cards.html",
+      "accessed": "2026-09-04"
+    }
+  ],
+  "benefits": [],
+  "reviewNotes": "The issuer lists no annual fee and unlimited 1.5% cash back. Purchase-derived, uncapped rewards are excluded by the recurring-benefit rules, so this card intentionally has no tracked benefits. Global synchronization disposition: create card:city-national-cash-back; there are no benefit definitions or existing-card statuses to propagate, and no Benefit Usage Guide linkage is needed. The issuer-hosted image was downloaded from the product page and is recorded in docs/card-image-sources.md."
+}

@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-16T20:15:50.608Z",
+  "updatedAt": "2026-09-04T09:37:21.426Z",
   "images": [
     {
       "cardName": "alaska-airlines-visa-signature-credit-card",
@@ -294,6 +294,21 @@
       "sha256": "907ccb85678efa0d39a644f8b6987f7873c0851996de394057f27cff8825d3e3",
       "duplicates": [],
       "validatedAt": "2026-05-16T20:15:50.595Z"
+    },
+    {
+      "cardName": "City National Cash Back Credit Card",
+      "filename": "city-national-cash-back-credit-card.jpg",
+      "path": "/images/cards/city-national-cash-back-credit-card.jpg",
+      "source": "direct-url",
+      "sourceUrl": "https://www.cnb.com/content/cnb/en/personal-banking/lending/credit-cards/cash-back.thumb.800.480.png",
+      "width": 1088,
+      "height": 713,
+      "type": "jpg",
+      "sizeBytes": 88028,
+      "sha256": "f7ea86556da8b61e215b82b49aacfa5d3434ea9c04f5df8fd157cafb03935f29",
+      "duplicates": [],
+      "overwritten": true,
+      "ingestedAt": "2026-09-04T09:37:21.414Z"
     },
     {
       "cardName": "delta-skymiles-gold-american-express-card",
