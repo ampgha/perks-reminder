@@ -3,7 +3,10 @@ import type {
   EffectiveBenefitStatus,
   EffectiveCreditCard,
 } from '@/lib/effective-benefit';
-import type { BenefitTrackingMode } from '@/lib/benefit-tracking-modes';
+import type {
+  BenefitClaimSource,
+  BenefitTrackingConfiguration,
+} from '@/lib/benefit-tracking-modes';
 
 /**
  * Types and pure helpers shared by the server dashboard projection and the
@@ -50,8 +53,8 @@ export interface DisplayBenefitStatus extends Omit<
   usageWaySlug?: string | null;
   isCustomBenefit?: boolean;
   canMutateDefinition?: boolean;
-  /** Cycle-independent tracking choice; absent means the TRACK default. */
-  trackingMode?: BenefitTrackingMode;
+  /** Complete cycle-independent choice; absent means the TRACK default. */
+  trackingConfiguration?: BenefitTrackingConfiguration;
 }
 
 export interface CardLevelRoi {
@@ -74,6 +77,7 @@ export interface BenefitDashboardStatus {
   isCompleted: boolean;
   isNotUsable?: boolean;
   usedAmount: number | null;
+  claimSource?: BenefitClaimSource | null;
   benefit: {
     description: string;
     category: string;
@@ -118,7 +122,10 @@ export function applyBenefitDashboardFilters<T extends BenefitDashboardStatus>(
 
 export function resolveBenefitClaimedValue(status: BenefitDashboardStatus): number {
   const usedAmount = Math.max(0, status.usedAmount ?? 0);
-  if (status.isCompleted && usedAmount === 0) {
+  // Legacy completed rows predate claim provenance and historically implied
+  // the full amount. An explicit AUTO/USER zero is real state and must remain
+  // zero even if the definition later gains a positive tracked value.
+  if (status.isCompleted && usedAmount === 0 && status.claimSource == null) {
     return Math.max(0, status.benefit.maxAmount ?? 0);
   }
   return usedAmount;

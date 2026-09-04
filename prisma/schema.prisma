@@ -276,18 +276,19 @@ model BenefitStatus {
 /// (creditCardId, predefinedBenefitId) pair used by BenefitStatus; custom
 /// benefits are identified by benefitId.
 model BenefitTrackingPreference {
-  id                  String              @id @default(cuid())
-  userId              String
-  creditCardId        String?
-  predefinedBenefitId String?
-  benefitId           String?
-  mode                BenefitTrackingMode @default(TRACK)
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
-  user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  creditCard          CreditCard?         @relation(fields: [creditCardId], references: [id], onDelete: Cascade)
-  predefinedBenefit   PredefinedBenefit?  @relation(fields: [predefinedBenefitId], references: [id], onDelete: Restrict)
-  benefit             Benefit?            @relation(fields: [benefitId], references: [id], onDelete: Cascade)
+  id                   String              @id @default(cuid())
+  userId               String
+  creditCardId         String?
+  predefinedBenefitId  String?
+  benefitId            String?
+  mode                 BenefitTrackingMode @default(TRACK)
+  autoClaimAmountCents Int?
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  user                 User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  creditCard           CreditCard?         @relation(fields: [creditCardId], references: [id], onDelete: Cascade)
+  predefinedBenefit    PredefinedBenefit?  @relation(fields: [predefinedBenefitId], references: [id], onDelete: Restrict)
+  benefit              Benefit?            @relation(fields: [benefitId], references: [id], onDelete: Cascade)
 
   @@unique([userId, creditCardId, predefinedBenefitId], map: "BenefitTrackingPreference_standard_key")
   @@unique([userId, benefitId], map: "BenefitTrackingPreference_custom_key")

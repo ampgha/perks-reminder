@@ -15,7 +15,10 @@ import {
   type BenefitDashboardFrequency,
   type DisplayBenefitStatus,
 } from '@/lib/benefit-dashboard-client';
-import type { BenefitTrackingMode } from '@/lib/benefit-tracking-modes';
+import {
+  initialStatusFieldsForTrackingConfiguration,
+  type BenefitTrackingConfiguration,
+} from '@/lib/benefit-tracking-modes';
 
 interface BenefitsDisplayProps {
   upcomingBenefits: DisplayBenefitStatus[];
@@ -198,8 +201,8 @@ export default function BenefitsDisplayClient({
    */
   const handleTrackingModeChange = (
     statusId: string,
-    _previousMode: BenefitTrackingMode,
-    mode: BenefitTrackingMode,
+    previousConfiguration: BenefitTrackingConfiguration,
+    configuration: BenefitTrackingConfiguration,
   ) => {
     const upcoming = localUpcomingBenefits.find((benefit) => benefit.id === statusId);
     const completed = localCompletedBenefits.find((benefit) => benefit.id === statusId);
@@ -208,84 +211,89 @@ export default function BenefitsDisplayClient({
     const status = upcoming ?? completed ?? ignored ?? scheduled;
     if (!status) return;
 
-    const maxAmount = Math.max(0, status.benefit.maxAmount ?? 0);
-    const usedAmount = Math.max(0, status.usedAmount ?? 0);
-    const claimedAmount = resolveBenefitClaimedValue(status);
+    const now = new Date();
+    const cycleStart = new Date(status.cycleStartDate).getTime();
+    const cycleEnd = new Date(status.cycleEndDate).getTime();
+    const cycleIsOpen = cycleStart <= now.getTime() && cycleEnd >= now.getTime();
+    const isVirgin = status.claimSource == null
+      && !status.isCompleted
+      && !status.isNotUsable
+      && Math.max(0, status.usedAmount ?? 0) === 0;
 
-    if (mode === 'IGNORE') {
-      setLocalUpcomingBenefits((items) => items.filter((item) => item.id !== statusId));
-      setLocalCompletedBenefits((items) => items.filter((item) => item.id !== statusId));
-      setLocalScheduledBenefits((items) => items.filter((item) => item.id !== statusId));
-      setLocalIgnoredBenefits((items) => [...items.filter((item) => item.id !== statusId), { ...status, trackingMode: mode }]);
+    let nextStatus: DisplayBenefitStatus = {
+      ...status,
+      trackingConfiguration: configuration,
+    };
 
-      if (upcoming) {
-        setLocalTotalUnusedValue((value) => value - Math.max(0, maxAmount - usedAmount));
-        setLocalTotalUsedValue((value) => value - usedAmount);
-      } else if (completed) {
-        setLocalTotalUsedValue((value) => value - claimedAmount);
-      }
-      return;
-    }
-
-    if (ignored) {
-      const restoredStatus = { ...ignored, trackingMode: mode };
-      setLocalIgnoredBenefits((items) => items.filter((item) => item.id !== statusId));
-      let restoredToTrackedTab = false;
-      const cycleStart = new Date(restoredStatus.cycleStartDate).getTime();
-      const cycleEnd = new Date(restoredStatus.cycleEndDate).getTime();
-      const cycleIsOpen = cycleStart <= Date.now() && cycleEnd >= Date.now();
-      if (mode === 'AUTO_CLAIM' && !restoredStatus.isCompleted && cycleIsOpen) {
-        setLocalCompletedBenefits((items) => [...items, {
-          ...restoredStatus,
-          isCompleted: true,
-          completedAt: new Date(),
-          usedAmount: maxAmount,
-        }]);
-        restoredToTrackedTab = true;
-        setLocalTotalUnusedValue((value) => value - Math.max(0, maxAmount - usedAmount));
-        setLocalTotalUsedValue((value) => value + Math.max(0, maxAmount - usedAmount));
-      } else if (restoredStatus.isCompleted) {
-        setLocalCompletedBenefits((items) => [...items, restoredStatus]);
-        restoredToTrackedTab = true;
-      } else if (cycleStart > Date.now()) {
-        setLocalScheduledBenefits((items) => [...items, restoredStatus]);
-        // Scheduled benefits do not contribute to current totals yet.
-      } else if (cycleEnd >= Date.now()) {
-        setLocalUpcomingBenefits((items) => [...items, restoredStatus]);
-        restoredToTrackedTab = true;
-      }
-      if (restoredStatus.isCompleted) {
-        setLocalTotalUsedValue((value) => value + claimedAmount);
-      } else if (restoredToTrackedTab && mode !== 'AUTO_CLAIM') {
-        setLocalTotalUnusedValue((value) => value + Math.max(0, maxAmount - usedAmount));
-        setLocalTotalUsedValue((value) => value + usedAmount);
-      }
-      return;
-    }
-
-    // AUTO_CLAIM only changes the currently open cycle. Scheduled rows remain
-    // scheduled until their cycle opens and the server materializes the claim.
-    if (mode === 'AUTO_CLAIM' && upcoming && !status.isCompleted) {
-      const claimedStatus: DisplayBenefitStatus = {
-        ...status,
-        isCompleted: true,
-        completedAt: new Date(),
-        usedAmount: maxAmount,
-        trackingMode: mode,
+    if (
+      configuration.mode === 'AUTO_CLAIM'
+      && cycleIsOpen
+      && (
+        (previousConfiguration.mode !== 'AUTO_CLAIM' && !status.isCompleted)
+        || (previousConfiguration.mode === 'AUTO_CLAIM'
+          && (status.claimSource === 'AUTO' || isVirgin))
+      )
+    ) {
+      nextStatus = {
+        ...nextStatus,
+        ...initialStatusFieldsForTrackingConfiguration(
+          configuration,
+          status.benefit.maxAmount,
+          now
+        ),
+        isNotUsable: false,
       };
-      setLocalUpcomingBenefits((items) => items.filter((item) => item.id !== statusId));
-      setLocalCompletedBenefits((items) => [...items, claimedStatus]);
-      setLocalTotalUnusedValue((value) => value - Math.max(0, maxAmount - usedAmount));
-      setLocalTotalUsedValue((value) => value + Math.max(0, maxAmount - usedAmount));
-      return;
+    } else if (
+      previousConfiguration.mode === 'AUTO_CLAIM'
+      && configuration.mode !== 'AUTO_CLAIM'
+      && cycleIsOpen
+      && status.isCompleted
+      && status.claimSource === 'AUTO'
+    ) {
+      nextStatus = {
+        ...nextStatus,
+        isCompleted: false,
+        completedAt: null,
+        usedAmount: 0,
+        claimSource: null,
+      };
     }
 
-    // Keep the mode in the local row when no list transition is needed.
-    const updateMode = (items: DisplayBenefitStatus[]) =>
-      items.map((item) => item.id === statusId ? { ...item, trackingMode: mode } : item);
-    setLocalUpcomingBenefits(updateMode);
-    setLocalCompletedBenefits(updateMode);
-    setLocalScheduledBenefits(updateMode);
+    const oldUsed = upcoming || completed ? resolveBenefitClaimedValue(status) : 0;
+    const oldUnused = upcoming
+      ? Math.max(0, Math.max(0, status.benefit.maxAmount ?? 0) - oldUsed)
+      : 0;
+
+    setLocalUpcomingBenefits((items) => items.filter((item) => item.id !== statusId));
+    setLocalCompletedBenefits((items) => items.filter((item) => item.id !== statusId));
+    setLocalIgnoredBenefits((items) => items.filter((item) => item.id !== statusId));
+    setLocalScheduledBenefits((items) => items.filter((item) => item.id !== statusId));
+
+    let destination: 'upcoming' | 'completed' | 'ignored' | 'scheduled' | null = null;
+    if (configuration.mode === 'IGNORE') destination = 'ignored';
+    else if (cycleStart > now.getTime()) destination = 'scheduled';
+    else if (nextStatus.isCompleted) destination = 'completed';
+    else if (cycleEnd >= now.getTime()) destination = 'upcoming';
+    else if (scheduled) destination = 'scheduled';
+
+    if (destination === 'ignored') {
+      setLocalIgnoredBenefits((items) => [...items, nextStatus]);
+    } else if (destination === 'scheduled') {
+      setLocalScheduledBenefits((items) => [...items, nextStatus]);
+    } else if (destination === 'completed') {
+      setLocalCompletedBenefits((items) => [...items, nextStatus]);
+    } else if (destination === 'upcoming') {
+      setLocalUpcomingBenefits((items) => [...items, nextStatus]);
+    }
+
+    const newUsed = destination === 'upcoming' || destination === 'completed'
+      ? resolveBenefitClaimedValue(nextStatus)
+      : 0;
+    const newUnused = destination === 'upcoming'
+      ? Math.max(0, Math.max(0, nextStatus.benefit.maxAmount ?? 0) - newUsed)
+      : 0;
+    setLocalTotalUsedValue((value) => value + newUsed - oldUsed);
+    setLocalTotalUnusedValue((value) => value + newUnused - oldUnused);
   };
 
 

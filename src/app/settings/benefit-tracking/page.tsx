@@ -4,22 +4,23 @@ import { Metadata } from 'next';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import PageHeader from '@/components/ui/PageHeader';
+import { configurationFromPreference } from '@/lib/benefit-tracking-modes';
 import BenefitTrackingClient, {
   type TrackedBenefitPreference,
 } from './BenefitTrackingClient';
 
 export const metadata: Metadata = {
   title: 'Benefit Tracking - Settings',
-  description: 'Review the benefits you auto-claim or ignore, and return them to normal tracking.',
+  description: 'Review and edit benefits you auto-claim or ignore.',
   alternates: {
     canonical: '/settings/benefit-tracking',
   },
 };
 
 /**
- * The management surface for cycle-independent tracking choices. An ignored
- * benefit is hidden from the dashboard by design, so this page is the only
- * place it can be found and restored.
+ * The management surface for cycle-independent tracking choices, including a
+ * second place to review and restore benefits shown in the dashboard's Ignored
+ * tab.
  */
 export default async function BenefitTrackingSettingsPage() {
   const session = await getServerSession(authOptions);
@@ -32,21 +33,40 @@ export default async function BenefitTrackingSettingsPage() {
     select: {
       id: true,
       mode: true,
+      autoClaimAmountCents: true,
+      creditCardId: true,
+      predefinedBenefitId: true,
+      benefitId: true,
       creditCard: { select: { name: true, nickname: true, lastFourDigits: true } },
       predefinedBenefit: {
         select: {
           description: true,
           category: true,
+          maxAmount: true,
+          frequency: true,
+          occurrencesInCycle: true,
           predefinedCard: { select: { name: true } },
         },
       },
-      benefit: { select: { description: true, category: true } },
+      benefit: {
+        select: {
+          description: true,
+          category: true,
+          maxAmount: true,
+          frequency: true,
+          occurrencesInCycle: true,
+        },
+      },
     },
     orderBy: { updatedAt: 'desc' },
   });
 
   const items: TrackedBenefitPreference[] = preferences.map((preference) => {
     const definition = preference.predefinedBenefit ?? preference.benefit;
+    const configuration = configurationFromPreference(preference);
+    if (configuration.mode === 'TRACK') {
+      throw new Error('Unexpected normal-tracking preference in settings query.');
+    }
     const card = preference.creditCard;
     const cardLabel = card
       ? [card.nickname || card.name, card.lastFourDigits ? `••${card.lastFourDigits}` : null]
@@ -56,10 +76,13 @@ export default async function BenefitTrackingSettingsPage() {
 
     return {
       id: preference.id,
-      mode: preference.mode === 'AUTO_CLAIM' ? 'AUTO_CLAIM' : 'IGNORE',
+      configuration,
       description: definition?.description ?? 'Unknown benefit',
       category: definition?.category ?? 'Other',
       cardLabel,
+      maxAmount: definition?.maxAmount ?? null,
+      frequency: definition?.frequency ?? 'ONE_TIME',
+      occurrencesInCycle: definition?.occurrencesInCycle ?? 1,
     };
   });
 
@@ -67,7 +90,7 @@ export default async function BenefitTrackingSettingsPage() {
     <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
       <PageHeader
         title="Benefit Tracking"
-        description="Benefits you have set to claim automatically or ignore entirely."
+        description="Review full or partial automatic claims, ignored benefits, and normal tracking."
       />
       <BenefitTrackingClient preferences={items} />
     </div>

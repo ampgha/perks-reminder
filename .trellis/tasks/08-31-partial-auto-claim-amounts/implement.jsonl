@@ -1,0 +1,11 @@
+{"file":".trellis/spec/perks-reminder/architecture-and-domain.md","reason":"Defines effective-benefit identity, Benefit Cycle semantics, provenance, and shared domain boundaries."}
+{"file":".trellis/spec/perks-reminder/database-and-data-safety.md","reason":"Defines schema, Prisma generation, migration, authentication, ownership, and database-operation safety gates."}
+{"file":".trellis/spec/perks-reminder/global-benefit-definitions-and-migration.md","reason":"Defines standard/custom benefit identity, materialization, catalog migration, and integrity-path invariants."}
+{"file":".trellis/spec/perks-reminder/deployment-and-external-effects.md","reason":"Defines merge-as-release behavior, migration-before-application ordering, and prohibited external effects."}
+{"file":".trellis/spec/perks-reminder/verification.md","reason":"Defines authorized static/unit checks and truthful reporting of database, build, and production skips."}
+{"file":".trellis/spec/frontend/component-guidelines.md","reason":"Defines shared component, accessibility, Server/Client Component, and interaction boundaries for card and settings editors."}
+{"file":".trellis/spec/frontend/state-management.md","reason":"Defines form state, pending/error handling, and server-action ownership for the shared editor."}
+{"file":".trellis/spec/frontend/type-safety.md","reason":"Defines shared discriminated-union ownership and strict client/server type boundaries."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Guards the configuration contract across schema, domain, actions, materialization, projection, UI, and documentation."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Requires one amount resolver, one mutation owner, and shared editor/copy instead of duplicated behavior."}
+{"file":".trellis/tasks/08-31-partial-auto-claim-amounts/research/current-model-and-options.md","reason":"Records PR 22 behavior, catalog measurements, current amount semantics, affected paths, alternatives, and the verification matrix."}

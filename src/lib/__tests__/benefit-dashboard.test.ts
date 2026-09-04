@@ -5,12 +5,13 @@ import {
   CUSTOM_BENEFITS_CARD_NAME,
   deduplicateBenefitStatusesForDashboard,
   isFreeNightOrCertificateBenefit,
+  resolveBenefitClaimedValue,
   type BenefitDashboardFilters,
   type BenefitDashboardStatus,
   type DisplayBenefitStatus,
   type RawDisplayBenefitStatus,
 } from '../benefit-dashboard';
-import { buildBenefitTrackingModeMap } from '@/lib/benefit-tracking-modes';
+import { buildBenefitTrackingConfigurationMap } from '@/lib/benefit-tracking-modes';
 import { CardLifecycleStatus } from '@/generated/prisma';
 
 const date = (value: string) => new Date(`${value}T00:00:00.000Z`);
@@ -48,6 +49,20 @@ describe('isFreeNightOrCertificateBenefit', () => {
     expect(isFreeNightOrCertificateBenefit(status('regular', {
       benefit: { description: 'Monthly Uber credit' },
     }))).toBe(false);
+  });
+});
+
+describe('resolveBenefitClaimedValue provenance compatibility', () => {
+  it('uses the legacy full-value fallback only for null provenance', () => {
+    const completedZero = status('completed-zero', {
+      isCompleted: true,
+      usedAmount: 0,
+      benefit: { maxAmount: 25 },
+    });
+
+    expect(resolveBenefitClaimedValue({ ...completedZero, claimSource: null })).toBe(25);
+    expect(resolveBenefitClaimedValue({ ...completedZero, claimSource: 'AUTO' })).toBe(0);
+    expect(resolveBenefitClaimedValue({ ...completedZero, claimSource: 'USER' })).toBe(0);
   });
 });
 
@@ -123,6 +138,7 @@ describe('buildBenefitDashboardProjection', () => {
       cycleEndDate: date('2026-05-31'),
       isCompleted: false,
       completedAt: null,
+      claimSource: null,
       isNotUsable: false,
       usedAmount: 0,
       orderIndex: null,
@@ -204,7 +220,7 @@ describe('buildBenefitDashboardProjection', () => {
     expect(projection.cardLevelRoi.map((row) => row.cardName)).toContain(CUSTOM_BENEFITS_CARD_NAME);
   });
 
-  it('drops ignored benefits from the tabs, totals, and ROI', () => {
+  it('moves ignored benefits out of tracked tabs, totals, and ROI', () => {
     const inputs = {
       statuses: [
         rawStatus('kept', { usedAmount: 10 }),
@@ -219,7 +235,7 @@ describe('buildBenefitDashboardProjection', () => {
     const tracked = buildBenefitDashboardProjection(inputs);
     const withIgnored = buildBenefitDashboardProjection({
       ...inputs,
-      trackingModes: buildBenefitTrackingModeMap([
+      trackingConfigurations: buildBenefitTrackingConfigurationMap([
         { creditCardId: card.id, predefinedBenefitId: null, benefitId: 'benefit-ignored', mode: 'IGNORE' },
       ]),
     });
@@ -239,14 +255,63 @@ describe('buildBenefitDashboardProjection', () => {
       usageWays: [],
       predefinedCardFees: [{ name: 'Test Card', annualFee: 95 }],
       now: date('2026-05-15'),
-      trackingModes: buildBenefitTrackingModeMap([
+      trackingConfigurations: buildBenefitTrackingConfigurationMap([
         { creditCardId: card.id, predefinedBenefitId: null, benefitId: 'benefit-auto', mode: 'AUTO_CLAIM' },
       ]),
     });
 
     expect(projection.completedBenefits.map((item) => item.id)).toEqual(['auto']);
-    expect(projection.completedBenefits[0].trackingMode).toBe('AUTO_CLAIM');
+    expect(projection.completedBenefits[0].trackingConfiguration).toEqual({
+      mode: 'AUTO_CLAIM',
+      value: { kind: 'FULL' },
+    });
     expect(projection.totalUsedValue).toBe(50);
+  });
+
+  it('uses an explicit partial auto-claim value in totals and ROI', () => {
+    const projection = buildBenefitDashboardProjection({
+      statuses: [rawStatus('fixed-auto', {
+        isCompleted: true,
+        claimSource: 'AUTO',
+        usedAmount: 15,
+        benefit: { maxAmount: 25 } as never,
+      })],
+      userCards: [card],
+      usageWays: [],
+      predefinedCardFees: [{ name: 'Test Card', annualFee: 95 }],
+      now: date('2026-05-15'),
+      trackingConfigurations: buildBenefitTrackingConfigurationMap([{
+        creditCardId: card.id,
+        predefinedBenefitId: null,
+        benefitId: 'benefit-fixed-auto',
+        mode: 'AUTO_CLAIM',
+        autoClaimAmountCents: 1500,
+      }]),
+    });
+
+    expect(projection.totalUsedValue).toBe(15);
+    expect(projection.cardLevelRoi[0]).toMatchObject({ claimedValue: 15, netRoi: -80 });
+    expect(projection.completedBenefits[0].trackingConfiguration).toEqual({
+      mode: 'AUTO_CLAIM',
+      value: { kind: 'FIXED', amountCents: 1500 },
+    });
+  });
+
+  it('does not inflate an explicit zero-value completion to the benefit maximum', () => {
+    const projection = buildBenefitDashboardProjection({
+      statuses: [rawStatus('zero-auto', {
+        isCompleted: true,
+        claimSource: 'AUTO',
+        usedAmount: 0,
+        benefit: { maxAmount: 25 } as never,
+      })],
+      userCards: [card],
+      usageWays: [],
+      predefinedCardFees: [],
+      now: date('2026-05-15'),
+    });
+
+    expect(projection.totalUsedValue).toBe(0);
   });
 
   it('uses authoritative global card terms instead of stale copied names', () => {

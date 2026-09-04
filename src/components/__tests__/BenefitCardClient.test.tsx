@@ -6,13 +6,14 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import BenefitCardClient from '../BenefitCardClient';
 import type { DisplayBenefitStatus } from '@/lib/benefit-dashboard-client';
+import { setBenefitTrackingModeAction } from '@/app/benefits/actions';
 
 jest.mock('@/app/benefits/actions', () => ({
   toggleBenefitStatusAction: jest.fn().mockResolvedValue(undefined),
   deleteCustomBenefitAction: jest.fn().mockResolvedValue(undefined),
   addPartialCompletionAction: jest.fn().mockResolvedValue({ success: true, isComplete: false, newUsedAmount: 10 }),
   markFullCompletionAction: jest.fn().mockResolvedValue({ success: true, usedAmount: 10 }),
-  setBenefitTrackingModeAction: jest.fn().mockResolvedValue(undefined),
+  setBenefitTrackingModeAction: jest.fn().mockResolvedValue({ success: true }),
 }));
 
 jest.mock('@/lib/partial-completion', () => ({
@@ -27,6 +28,7 @@ function createMockStatus(overrides: Partial<DisplayBenefitStatus> = {}): Displa
     cycleStartDate: new Date('2024-01-01'),
     cycleEndDate: new Date('2024-01-31'),
     isCompleted: false,
+    claimSource: null,
     isNotUsable: false,
     completedAt: null,
     usedAmount: null,
@@ -124,41 +126,18 @@ describe('BenefitCardClient', () => {
     );
   });
 
-  it('shows the current tracking mode in the trigger and marks it selected', () => {
-    const status = createMockStatus({ trackingMode: 'IGNORE' });
-    render(<BenefitCardClient status={status} />);
-
-    const trigger = screen.getByRole('button', { name: /Tracking mode: Ignore this benefit/i });
-    expect(trigger).toHaveAttribute('aria-expanded', 'false');
-
-    fireEvent.click(trigger);
-
-    const selectedOption = screen.getByRole('button', { name: /Ignore this benefit.*Current/i });
-    expect(selectedOption).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByRole('button', { name: /Track every cycle/i })).toHaveAttribute('aria-pressed', 'false');
-  });
-
   it('keeps ignored cards read-only while allowing tracking restoration', () => {
-    const status = createMockStatus({ trackingMode: 'IGNORE', isCustomBenefit: true });
+    const status = createMockStatus({
+      trackingConfiguration: { mode: 'IGNORE' },
+      isCustomBenefit: true,
+    });
     render(<BenefitCardClient status={status} isIgnoredView />);
 
-    expect(screen.getByText('Ignored')).toBeInTheDocument();
+    expect(screen.getAllByText('Ignored').length).toBeGreaterThan(0);
     expect(screen.queryByRole('button', { name: /Mark Complete/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Add Amount/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Delete/i })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Tracking mode: Ignore this benefit/i })).toBeInTheDocument();
-  });
-
-  it('updates the visible mode after a successful tracking choice', async () => {
-    const status = createMockStatus();
-    render(<BenefitCardClient status={status} />);
-
-    fireEvent.click(screen.getByRole('button', { name: /Tracking mode: Track every cycle/i }));
-    fireEvent.click(screen.getByRole('button', { name: /Always claim it for me/i }));
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Tracking mode: Always claim it for me/i })).toBeInTheDocument();
-    });
+    expect(screen.getByRole('button', { name: /Tracking mode: Ignored/i })).toBeInTheDocument();
   });
 
   it('does not expose the deprecated cycle-level not-usable action', () => {
@@ -174,5 +153,46 @@ describe('BenefitCardClient', () => {
 
     expect(screen.getByText('Open')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Mark Complete/i })).toBeInTheDocument();
+  });
+
+  it('shows the configured auto-claim summary and saves a fixed partial value', async () => {
+    const action = setBenefitTrackingModeAction as jest.MockedFunction<
+      typeof setBenefitTrackingModeAction
+    >;
+    const status = createMockStatus({
+      trackingConfiguration: { mode: 'AUTO_CLAIM', value: { kind: 'FULL' } },
+    });
+    render(<BenefitCardClient status={status} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /Auto: full \(\$10\.00\)/i }));
+    fireEvent.click(screen.getByRole('radio', { name: /A partial amount/i }));
+    fireEvent.change(screen.getByLabelText(/Tracked value per cycle/i), {
+      target: { value: '6.50' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Save tracking choice/i }));
+
+    await waitFor(() => expect(action).toHaveBeenCalledTimes(1));
+    const submitted = action.mock.calls[0][0];
+    expect(submitted.get('benefitStatusId')).toBe('status-1');
+    expect(submitted.get('trackingMode')).toBe('AUTO_CLAIM');
+    expect(submitted.get('autoClaimValueKind')).toBe('FIXED');
+    expect(submitted.get('autoClaimAmount')).toBe('6.50');
+  });
+
+  it('shows an auto-claimed partial amount instead of the maximum', () => {
+    const status = createMockStatus({
+      isCompleted: true,
+      claimSource: 'AUTO',
+      usedAmount: 6.5,
+      trackingConfiguration: {
+        mode: 'AUTO_CLAIM',
+        value: { kind: 'FIXED', amountCents: 650 },
+      },
+    });
+    render(<BenefitCardClient status={status} />);
+
+    expect(screen.getByText('$6.50')).toBeInTheDocument();
+    expect(screen.getByText('of $10.00')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Auto: \$6\.50\/cycle/i })).toBeInTheDocument();
   });
 });

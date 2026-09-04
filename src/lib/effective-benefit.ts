@@ -1,6 +1,7 @@
 import { Prisma, type BenefitCycleAlignment, type BenefitFrequency, type PrismaClient } from '@/generated/prisma';
 import { classifyGlobalBenefitCategoryRepairAuthority } from './global-benefit-category-repair-authority';
 import type { GlobalBenefitDefinition, GlobalCardDefinition } from './global-benefit-migration';
+import type { BenefitClaimSource } from './benefit-tracking-modes';
 
 export type EffectiveBenefitSource =
   | { kind: 'standard'; predefinedBenefitId: string; creditCardId: string }
@@ -72,6 +73,7 @@ export interface EffectiveBenefitStatus {
   completedAt: Date | null;
   isNotUsable: boolean;
   usedAmount: number | null;
+  claimSource: BenefitClaimSource | null;
   createdAt: Date;
   updatedAt: Date;
   orderIndex: number | null;
@@ -149,6 +151,7 @@ interface EffectiveBenefitRow {
   completedAt: Date | null;
   isNotUsable: boolean;
   usedAmount: number | null;
+  claimSource: BenefitClaimSource | null;
   statusCreatedAt: Date;
   statusUpdatedAt: Date;
   orderIndex: number | null;
@@ -298,6 +301,7 @@ export async function fetchEffectiveBenefitStatuses(
       bs."completedAt",
       bs."isNotUsable",
       bs."usedAmount",
+      bs."claimSource"::text AS "claimSource",
       bs."createdAt" AS "statusCreatedAt",
       bs."updatedAt" AS "statusUpdatedAt",
       bs."orderIndex",
@@ -444,6 +448,7 @@ export async function findEffectiveBenefitStatus(
       bs."completedAt",
       bs."isNotUsable",
       bs."usedAmount",
+      bs."claimSource"::text AS "claimSource",
       bs."createdAt" AS "statusCreatedAt",
       bs."updatedAt" AS "statusUpdatedAt",
       bs."orderIndex",
@@ -818,6 +823,7 @@ function projectStatusState(row: EffectiveBenefitRow) {
     completedAt: row.completedAt,
     isNotUsable: row.isNotUsable,
     usedAmount: row.usedAmount,
+    claimSource: row.claimSource,
     createdAt: row.statusCreatedAt,
     updatedAt: row.statusUpdatedAt,
     orderIndex: row.orderIndex,

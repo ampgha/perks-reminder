@@ -5,28 +5,29 @@ import {
   type EffectiveBenefitStatusFilters,
 } from '@/lib/effective-benefit';
 import {
+  BenefitTrackingConfigurationError,
+  benefitTrackingConfigurationsEqual,
   benefitTrackingKey,
-  buildBenefitTrackingModeMap,
+  buildBenefitTrackingConfigurationMap,
+  configurationFromPreference,
   excludeIgnoredBenefits,
-  initialStatusFieldsForTrackingMode,
-  resolveBenefitTrackingMode,
+  initialStatusFieldsForTrackingConfiguration,
+  resolveBenefitTrackingConfiguration,
+  validateBenefitTrackingConfiguration,
   type BenefitClaimSource,
-  type BenefitTrackingModeMap,
+  type BenefitTrackingConfiguration,
+  type BenefitTrackingConfigurationMap,
   type BenefitTrackingPreferenceRecord,
   type BenefitTrackingTarget,
 } from '@/lib/benefit-tracking-modes';
 
 /**
- * The single database-aware entry point for cycle-independent tracking modes.
+ * The database-aware owner for cycle-independent tracking preferences.
  *
- * Read surfaces (dashboard, home, calendar, APIs, notification digest) call
- * `fetchTrackedBenefitStatuses` instead of `fetchEffectiveBenefitStatuses`, so
- * IGNORE is honoured in exactly one place rather than being re-implemented per
- * surface. Write surfaces call `applyTrackingModesToPlannedRows`, so AUTO_CLAIM
- * is honoured in every materialization path for the same reason.
- *
- * Integrity and repair tooling deliberately keeps using the unfiltered readers:
- * a user's display preference must never hide a row from a consistency check.
+ * User-facing reads filter IGNORE here; repair and integrity readers continue
+ * using the unfiltered effective-benefit owner. Materialization, window entry,
+ * and explicit preference mutations all resolve amounts through the same pure
+ * configuration owner.
  */
 
 export type TrackingPreferenceDatabase = Pick<PrismaClient, 'benefitTrackingPreference'>;
@@ -40,36 +41,33 @@ const PREFERENCE_SELECT = {
   predefinedBenefitId: true,
   benefitId: true,
   mode: true,
+  autoClaimAmountCents: true,
 } as const;
 
-/** Tracking modes for one user. Users with no preferences get an empty map. */
-export async function loadBenefitTrackingModes(
+/** Complete tracking configurations for one user. */
+export async function loadBenefitTrackingConfigurations(
   database: TrackingPreferenceDatabase,
   userId: string
-): Promise<BenefitTrackingModeMap> {
+): Promise<BenefitTrackingConfigurationMap> {
   const preferences = await database.benefitTrackingPreference.findMany({
     where: { userId, mode: { not: 'TRACK' } },
     select: PREFERENCE_SELECT,
-  }) as unknown as PreferenceRow[];
-  return buildBenefitTrackingModeMap(preferences);
+  });
+  return buildBenefitTrackingConfigurationMap(preferences);
 }
 
-/**
- * Tracking modes for several users at once, keyed by user id. The notification
- * digest fans out across users in one query, so it must not resolve one user's
- * preference against another user's rows.
- */
-export async function loadBenefitTrackingModesByUser(
+/** Complete configurations for several users, isolated by owning user ID. */
+export async function loadBenefitTrackingConfigurationsByUser(
   database: TrackingPreferenceDatabase,
   userIds: readonly string[]
-): Promise<Map<string, BenefitTrackingModeMap>> {
-  const byUser = new Map<string, BenefitTrackingModeMap>();
+): Promise<Map<string, BenefitTrackingConfigurationMap>> {
+  const byUser = new Map<string, BenefitTrackingConfigurationMap>();
   if (userIds.length === 0) return byUser;
 
   const preferences = await database.benefitTrackingPreference.findMany({
     where: { userId: { in: [...userIds] }, mode: { not: 'TRACK' } },
     select: PREFERENCE_SELECT,
-  }) as unknown as PreferenceRow[];
+  });
 
   const grouped = new Map<string, PreferenceRow[]>();
   for (const preference of preferences) {
@@ -77,19 +75,13 @@ export async function loadBenefitTrackingModesByUser(
     if (existing) existing.push(preference);
     else grouped.set(preference.userId, [preference]);
   }
-  for (const [userId, rows] of Array.from(grouped.entries())) {
-    byUser.set(userId, buildBenefitTrackingModeMap(rows));
-  }
+  grouped.forEach((rows, userId) => {
+    byUser.set(userId, buildBenefitTrackingConfigurationMap(rows));
+  });
   return byUser;
 }
 
-/**
- * The canonical read for every user-facing surface: effective statuses with the
- * user's ignored benefits removed.
- *
- * Supports both the single-user and multi-user filter shapes, and resolves each
- * row against its own owner's preferences.
- */
+/** Canonical user-facing read: effective statuses minus IGNORE preferences. */
 export async function fetchTrackedBenefitStatuses(
   database: StatusReadDatabase & TrackingPreferenceDatabase,
   filters: EffectiveBenefitStatusFilters
@@ -98,15 +90,21 @@ export async function fetchTrackedBenefitStatuses(
   if (statuses.length === 0) return statuses;
 
   if (filters.userIds) {
-    const modesByUser = await loadBenefitTrackingModesByUser(database, filters.userIds);
-    if (modesByUser.size === 0) return statuses;
+    const configurationsByUser = await loadBenefitTrackingConfigurationsByUser(
+      database,
+      filters.userIds
+    );
+    if (configurationsByUser.size === 0) return statuses;
     return statuses.filter(
-      (status) => resolveBenefitTrackingMode(modesByUser.get(status.userId), status) !== 'IGNORE'
+      (status) => resolveBenefitTrackingConfiguration(
+        configurationsByUser.get(status.userId),
+        status
+      ).mode !== 'IGNORE'
     );
   }
 
-  const modes = await loadBenefitTrackingModes(database, filters.userId!);
-  return excludeIgnoredBenefits(statuses, modes);
+  const configurations = await loadBenefitTrackingConfigurations(database, filters.userId!);
+  return excludeIgnoredBenefits(statuses, configurations);
 }
 
 /** A planned status insert, in the shape every materialization path produces. */
@@ -122,13 +120,8 @@ export interface MaterializedStatusDefaults {
 }
 
 /**
- * The canonical write helper: resolves each planned row against its owner's
- * tracking mode and returns the status fields that row should be created with.
- *
- * AUTO_CLAIM rows open already claimed at the benefit's full value; every other
- * mode opens unclaimed. Returned in the same order as `rows`.
- *
- * Rows whose benefit has no stored maximum claim 0 rather than inventing value.
+ * Resolve every planned insert against its owner's complete configuration.
+ * Result order is exactly the input order so callers can zip fields onto rows.
  */
 export async function applyTrackingModesToPlannedRows<T extends PlannedStatusRow>(
   database: TrackingPreferenceDatabase & Pick<PrismaClient, 'predefinedBenefit' | 'benefit'>,
@@ -137,30 +130,33 @@ export async function applyTrackingModesToPlannedRows<T extends PlannedStatusRow
 ): Promise<MaterializedStatusDefaults[]> {
   if (rows.length === 0) return [];
 
-  const modesByUser = await loadBenefitTrackingModesByUser(
+  const configurationsByUser = await loadBenefitTrackingConfigurationsByUser(
     database,
     Array.from(new Set(rows.map((row) => row.userId)))
   );
-  // Nothing is auto-claimed, so no amount lookup is needed at all.
-  if (modesByUser.size === 0) {
-    return rows.map(() => ({ isCompleted: false, completedAt: null, usedAmount: 0, claimSource: null }));
+  if (configurationsByUser.size === 0) {
+    return rows.map(() => ({
+      isCompleted: false,
+      completedAt: null,
+      usedAmount: 0,
+      claimSource: null,
+    }));
   }
 
-  const autoClaimRows = rows.filter(
-    (row) => resolveBenefitTrackingMode(modesByUser.get(row.userId), row) === 'AUTO_CLAIM'
-  );
+  const autoClaimRows = rows.filter((row) => (
+    resolveBenefitTrackingConfiguration(configurationsByUser.get(row.userId), row).mode
+      === 'AUTO_CLAIM'
+  ));
   const amounts = await loadClaimableAmounts(database, autoClaimRows);
 
-  return rows.map((row) =>
-    initialStatusFieldsForTrackingMode(
-      resolveBenefitTrackingMode(modesByUser.get(row.userId), row),
-      amounts.get(benefitTrackingKey(row) ?? ''),
-      now
-    )
-  );
+  return rows.map((row) => initialStatusFieldsForTrackingConfiguration(
+    resolveBenefitTrackingConfiguration(configurationsByUser.get(row.userId), row),
+    amounts.get(benefitTrackingKey(row) ?? ''),
+    now
+  ));
 }
 
-/** Full value of each auto-claimed benefit, keyed the way preferences are. */
+/** Current tracked dollar maximum, keyed exactly like preferences. */
 async function loadClaimableAmounts(
   database: Pick<PrismaClient, 'predefinedBenefit' | 'benefit'>,
   rows: readonly PlannedStatusRow[]
@@ -168,17 +164,15 @@ async function loadClaimableAmounts(
   const amounts = new Map<string, number | null>();
   if (rows.length === 0) return amounts;
 
-  const predefinedBenefitIds = Array.from(
-    new Set(rows.map((row) => row.predefinedBenefitId).filter((id): id is string => Boolean(id)))
-  );
-  const benefitIds = Array.from(
-    new Set(
-      rows
-        .filter((row) => !row.predefinedBenefitId)
-        .map((row) => row.benefitId)
-        .filter((id): id is string => Boolean(id))
-    )
-  );
+  const predefinedBenefitIds = Array.from(new Set(
+    rows.map((row) => row.predefinedBenefitId).filter((id): id is string => Boolean(id))
+  ));
+  const benefitIds = Array.from(new Set(
+    rows
+      .filter((row) => !row.predefinedBenefitId)
+      .map((row) => row.benefitId)
+      .filter((id): id is string => Boolean(id))
+  ));
 
   const [predefinedBenefits, benefits] = await Promise.all([
     predefinedBenefitIds.length > 0
@@ -210,35 +204,29 @@ async function loadClaimableAmounts(
   return amounts;
 }
 
-/**
- * Claims pre-materialized rows whose Benefit Cycle has since opened.
- *
- * Materialization creates future cycles ahead of time, so a row can exist
- * before its owner's AUTO_CLAIM preference applies to it and simply become
- * "current" as time passes — the insert-only cron never revisits it. This runs
- * from the same cron and claims exactly those rows.
- *
- * Only virgin rows are touched: unclaimed, unused, usable, and never stamped by
- * the user or this feature (`claimSource` null). A row the user deliberately
- * reopened carries `claimSource: 'USER'` and is skipped forever.
- */
+/** Claim pre-materialized virgin rows when their Benefit Cycle opens. */
 export async function claimWindowEntryAutoClaims(
-  database: TrackingPreferenceDatabase & Pick<PrismaClient, 'predefinedBenefit' | 'benefit' | 'benefitStatus'>,
+  database: TrackingPreferenceDatabase
+    & Pick<PrismaClient, 'predefinedBenefit' | 'benefit' | 'benefitStatus'>,
   now: Date = new Date()
 ): Promise<number> {
   const preferences = await database.benefitTrackingPreference.findMany({
     where: { mode: 'AUTO_CLAIM' },
     select: PREFERENCE_SELECT,
-  }) as unknown as PreferenceRow[];
+  });
   if (preferences.length === 0) return 0;
 
   const amounts = await loadClaimableAmounts(database, preferences);
-
   let claimed = 0;
   for (const preference of preferences) {
     const key = benefitTrackingKey(preference);
     if (key === null) continue;
-    const fields = initialStatusFieldsForTrackingMode('AUTO_CLAIM', amounts.get(key), now);
+    const configuration = configurationFromPreference(preference);
+    const fields = initialStatusFieldsForTrackingConfiguration(
+      configuration,
+      amounts.get(key),
+      now
+    );
     const result = await database.benefitStatus.updateMany({
       where: {
         userId: preference.userId,
@@ -260,4 +248,178 @@ export async function claimWindowEntryAutoClaims(
     claimed += result.count;
   }
   return claimed;
+}
+
+export interface BenefitTrackingMutationTarget {
+  creditCardId: string | null;
+  predefinedBenefitId: string | null;
+  benefitId: string | null;
+}
+
+export interface ApplyBenefitTrackingConfigurationInput {
+  userId: string;
+  target: BenefitTrackingMutationTarget;
+  maximumAmount: number | null | undefined;
+  configuration: BenefitTrackingConfiguration;
+  now?: Date;
+  expectedPreferenceId?: string;
+}
+
+export type BenefitTrackingMutationDatabase = Pick<PrismaClient, '$transaction'>;
+
+function validateMutationTarget(target: BenefitTrackingMutationTarget): void {
+  const standard = Boolean(
+    target.creditCardId && target.predefinedBenefitId && !target.benefitId
+  );
+  const custom = Boolean(
+    target.benefitId && !target.creditCardId && !target.predefinedBenefitId
+  );
+  if (!standard && !custom) {
+    throw new BenefitTrackingConfigurationError('Invalid benefit tracking target.');
+  }
+}
+
+function persistenceAmount(configuration: BenefitTrackingConfiguration): number | null {
+  return configuration.mode === 'AUTO_CLAIM' && configuration.value.kind === 'FIXED'
+    ? configuration.value.amountCents
+    : null;
+}
+
+/**
+ * Persist a configuration and apply its exact open-cycle provenance transition
+ * in one transaction. Both card and settings actions call this owner.
+ */
+export async function applyBenefitTrackingConfiguration(
+  database: BenefitTrackingMutationDatabase,
+  input: ApplyBenefitTrackingConfigurationInput
+): Promise<BenefitTrackingConfiguration> {
+  validateMutationTarget(input.target);
+  validateBenefitTrackingConfiguration(input.configuration, input.maximumAmount);
+  const now = input.now ?? new Date();
+
+  return database.$transaction(async (transaction) => {
+    const existing = await transaction.benefitTrackingPreference.findFirst({
+      where: {
+        userId: input.userId,
+        ...input.target,
+        ...(input.expectedPreferenceId ? { id: input.expectedPreferenceId } : {}),
+      },
+      select: {
+        id: true,
+        mode: true,
+        autoClaimAmountCents: true,
+        creditCardId: true,
+        predefinedBenefitId: true,
+        benefitId: true,
+      },
+    });
+
+    if (input.expectedPreferenceId && !existing) {
+      throw new BenefitTrackingConfigurationError(
+        'Tracking preference not found or permission denied.'
+      );
+    }
+
+    const previousConfiguration = configurationFromPreference(existing);
+    const configurationChanged = !benefitTrackingConfigurationsEqual(
+      previousConfiguration,
+      input.configuration
+    );
+
+    if (configurationChanged) {
+      if (input.configuration.mode === 'TRACK') {
+        if (existing) {
+          const deleted = await transaction.benefitTrackingPreference.deleteMany({
+            where: { id: existing.id, userId: input.userId },
+          });
+          if (deleted.count !== 1) {
+            throw new BenefitTrackingConfigurationError(
+              'Tracking preference not found or permission denied.'
+            );
+          }
+        }
+      } else if (existing) {
+        const updated = await transaction.benefitTrackingPreference.updateMany({
+          where: { id: existing.id, userId: input.userId },
+          data: {
+            mode: input.configuration.mode,
+            autoClaimAmountCents: persistenceAmount(input.configuration),
+          },
+        });
+        if (updated.count !== 1) {
+          throw new BenefitTrackingConfigurationError(
+            'Tracking preference not found or permission denied.'
+          );
+        }
+      } else {
+        await transaction.benefitTrackingPreference.create({
+          data: {
+            userId: input.userId,
+            ...input.target,
+            mode: input.configuration.mode,
+            autoClaimAmountCents: persistenceAmount(input.configuration),
+          },
+        });
+      }
+    }
+
+    const openCycleWhere = {
+      userId: input.userId,
+      cycleStartDate: { lte: now },
+      cycleEndDate: { gte: now },
+      ...(input.target.predefinedBenefitId
+        ? {
+            creditCardId: input.target.creditCardId,
+            predefinedBenefitId: input.target.predefinedBenefitId,
+          }
+        : { benefitId: input.target.benefitId }),
+    };
+
+    if (input.configuration.mode === 'AUTO_CLAIM' && configurationChanged) {
+      const fields = initialStatusFieldsForTrackingConfiguration(
+        input.configuration,
+        input.maximumAmount,
+        now
+      );
+      if (previousConfiguration.mode === 'AUTO_CLAIM') {
+        await transaction.benefitStatus.updateMany({
+          where: {
+            ...openCycleWhere,
+            OR: [
+              { claimSource: 'AUTO' },
+              {
+                claimSource: null,
+                isCompleted: false,
+                isNotUsable: false,
+                usedAmount: 0,
+              },
+            ],
+          },
+          data: { ...fields, isNotUsable: false },
+        });
+      } else {
+        await transaction.benefitStatus.updateMany({
+          where: { ...openCycleWhere, isCompleted: false },
+          data: { ...fields, isNotUsable: false },
+        });
+      }
+    }
+
+    if (
+      previousConfiguration.mode === 'AUTO_CLAIM'
+      && input.configuration.mode !== 'AUTO_CLAIM'
+    ) {
+      await transaction.benefitStatus.updateMany({
+        where: { ...openCycleWhere, isCompleted: true, claimSource: 'AUTO' },
+        data: {
+          isCompleted: false,
+          completedAt: null,
+          usedAmount: 0,
+          claimSource: null,
+        },
+      });
+    }
+
+    return input.configuration;
+  });
 }

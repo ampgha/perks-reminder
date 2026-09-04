@@ -9,6 +9,7 @@ import {
   CUSTOM_BENEFITS_CARD_NAME,
   type DisplayBenefitStatus,
 } from '@/lib/benefit-dashboard-client';
+import type { BenefitTrackingConfiguration } from '@/lib/benefit-tracking-modes';
 
 jest.mock('../BenefitCardClient', () => {
   return function MockBenefitCardClient({ status }: { status: DisplayBenefitStatus }) {
@@ -26,7 +27,11 @@ jest.mock('../CategoryBenefitsGroup', () => ({
     category: string;
     benefits: DisplayBenefitStatus[];
     onStatusChange?: (statusId: string, newIsCompleted: boolean, newUsedAmount?: number) => void;
-    onTrackingModeChange?: (statusId: string, previousMode: 'TRACK' | 'AUTO_CLAIM' | 'IGNORE', mode: 'TRACK' | 'AUTO_CLAIM' | 'IGNORE') => void;
+    onTrackingModeChange?: (
+      statusId: string,
+      previousConfiguration: BenefitTrackingConfiguration,
+      configuration: BenefitTrackingConfiguration
+    ) => void;
   }) {
     return (
       <div data-testid="category-group">
@@ -41,8 +46,36 @@ jest.mock('../CategoryBenefitsGroup', () => ({
             >
               {b.isCompleted ? `Restore ${b.benefit.description}` : `Complete ${b.benefit.description}`}
             </button>
-            <button type="button" onClick={() => onTrackingModeChange?.(b.id, 'TRACK', 'AUTO_CLAIM')}>Auto claim</button>
-            <button type="button" onClick={() => onTrackingModeChange?.(b.id, 'TRACK', 'IGNORE')}>Ignore</button>
+            <button
+              type="button"
+              onClick={() => onTrackingModeChange?.(
+                b.id,
+                b.trackingConfiguration ?? { mode: 'TRACK' },
+                { mode: 'AUTO_CLAIM', value: { kind: 'FULL' } }
+              )}
+            >
+              Auto claim
+            </button>
+            <button
+              type="button"
+              onClick={() => onTrackingModeChange?.(
+                b.id,
+                b.trackingConfiguration ?? { mode: 'TRACK' },
+                { mode: 'AUTO_CLAIM', value: { kind: 'FIXED', amountCents: 4000 } }
+              )}
+            >
+              Auto claim $40
+            </button>
+            <button
+              type="button"
+              onClick={() => onTrackingModeChange?.(
+                b.id,
+                b.trackingConfiguration ?? { mode: 'TRACK' },
+                { mode: 'IGNORE' }
+              )}
+            >
+              Ignore
+            </button>
           </div>
         ))}
       </div>
@@ -70,9 +103,10 @@ function benefitStatus(
     benefitId: `benefit-${id}`,
     userId: 'user-1',
     cycleStartDate: new Date('2026-04-01T00:00:00.000Z'),
-    cycleEndDate: new Date('2026-04-30T00:00:00.000Z'),
+    cycleEndDate: new Date('2026-12-31T23:59:59.999Z'),
     isCompleted: false,
     completedAt: null,
+    claimSource: null,
     isNotUsable: false,
     usedAmount: 0,
     createdAt: new Date('2026-04-01T00:00:00.000Z'),
@@ -144,7 +178,10 @@ describe('BenefitsDisplayClient', () => {
     render(
       <BenefitsDisplayClient
         {...defaultProps}
-        ignoredBenefits={[{ ...benefitStatus('ignored', 'Ignored dining credit', 'MONTHLY'), trackingMode: 'IGNORE' }]}
+        ignoredBenefits={[{
+          ...benefitStatus('ignored', 'Ignored dining credit', 'MONTHLY'),
+          trackingConfiguration: { mode: 'IGNORE' },
+        }]}
       />
     );
 
@@ -353,6 +390,22 @@ describe('BenefitsDisplayClient', () => {
     expect(screen.getByRole('button', { name: /Claimed \(1\)/i })).toBeInTheDocument();
     expect(screen.getByText('Claimed Benefits')).toBeInTheDocument();
     expect(screen.getAllByText('$100.00').length).toBeGreaterThan(0);
+    expect(screen.getByRole('button', { name: /Upcoming \(0\)/i })).toBeInTheDocument();
+  });
+
+  it('uses the fixed tracked value for an optimistic automatic claim', () => {
+    render(
+      <BenefitsDisplayClient
+        {...defaultProps}
+        upcomingBenefits={[benefitStatus('auto-fixed', 'Partially auto claim me', 'MONTHLY')]}
+        totalUnusedValue={100}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Auto claim $40' }));
+
+    expect(screen.getByRole('button', { name: /Claimed \(1\)/i })).toBeInTheDocument();
+    expect(screen.getAllByText('$40.00').length).toBeGreaterThan(0);
     expect(screen.getByRole('button', { name: /Upcoming \(0\)/i })).toBeInTheDocument();
   });
 

@@ -1,0 +1,11 @@
+{"file":".trellis/spec/perks-reminder/architecture-and-domain.md","reason":"Verify Benefit Cycle, provenance, effective identity, history, and current/future transition semantics."}
+{"file":".trellis/spec/perks-reminder/database-and-data-safety.md","reason":"Verify additive SQL, scoped mutations, transaction behavior, and that prohibited database operations were not run."}
+{"file":".trellis/spec/perks-reminder/global-benefit-definitions-and-migration.md","reason":"Verify standard/custom/multi-user materialization and that integrity or catalog paths were not preference-filtered."}
+{"file":".trellis/spec/perks-reminder/deployment-and-external-effects.md","reason":"Verify release ordering and accurate reporting of skipped build, migration, deployment, cron, and notification work."}
+{"file":".trellis/spec/perks-reminder/verification.md","reason":"Run the required type, lint, test, diff, migration-review, and full-scope inspection gates."}
+{"file":".trellis/spec/frontend/component-guidelines.md","reason":"Verify semantic controls, shared editor behavior, accessibility, and Server/Client Component correctness."}
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"Verify component coverage, loading/error states, consistency, and absence of new frontend warnings."}
+{"file":".trellis/spec/frontend/type-safety.md","reason":"Verify exhaustive union handling and no loss of configuration across client/server projections."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Trace full, fixed, zero, capped, reset, and manual-override behavior end to end."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Check that amount resolution, mutation transitions, summaries, and validation copy have single owners."}
+{"file":".trellis/tasks/08-31-partial-auto-claim-amounts/research/current-model-and-options.md","reason":"Compare the implementation against the investigated catalog and current-code edge cases."}

@@ -4,7 +4,7 @@ import React, { useState, useTransition } from 'react';
 import BenefitCardClient from '@/components/BenefitCardClient';
 import { batchCompleteBenefitsByCategoryAction } from '@/app/benefits/actions';
 import type { DisplayBenefitStatus } from '@/lib/benefit-dashboard-client';
-import type { BenefitTrackingMode } from '@/lib/benefit-tracking-modes';
+import type { BenefitTrackingConfiguration } from '@/lib/benefit-tracking-modes';
 import { formatDate } from '@/lib/dateUtils';
 import { calculateBenefitGroupSummary } from '@/lib/benefit-dashboard-client';
 
@@ -14,7 +14,11 @@ interface CategoryBenefitsGroupProps {
   onStatusChange?: (statusId: string, newIsCompleted: boolean, newUsedAmount?: number) => void;
   onDelete?: (benefitId: string) => void;
   onPartialCompletionChange?: (statusId: string, newUsedAmount: number, isNowComplete: boolean) => void;
-  onTrackingModeChange?: (statusId: string, previousMode: BenefitTrackingMode, mode: BenefitTrackingMode) => void;
+  onTrackingModeChange?: (
+    statusId: string,
+    previousConfiguration: BenefitTrackingConfiguration,
+    configuration: BenefitTrackingConfiguration
+  ) => void;
   isIgnoredView?: boolean;
 }
 
@@ -165,7 +169,8 @@ export default function CategoryBenefitsGroup({
 
   // Filter benefits that can be batch completed (all open benefits)
   const completableBenefits = isIgnoredView ? [] : benefits.filter(
-    (benefit) => !benefit.isCompleted && benefit.trackingMode !== 'AUTO_CLAIM'
+    (benefit) => !benefit.isCompleted
+      && benefit.trackingConfiguration?.mode !== 'AUTO_CLAIM'
   );
   const categoryTotal = benefits.reduce((sum, benefit) => sum + (benefit.benefit.maxAmount || 0), 0);
   const completedTotal = benefits

@@ -88,7 +88,9 @@ jest.mock('@/lib/prisma', () => {
       findFirst: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
+      updateMany: jest.fn().mockResolvedValue({ count: 1 }),
       delete: jest.fn(),
+      deleteMany: jest.fn().mockResolvedValue({ count: 1 }),
     },
     benefitUsageWay: {
       findMany: jest.fn(),

@@ -50,6 +50,7 @@ function effectiveStatus(input: {
     usedAmount: input.usedAmount ?? 0,
     isCompleted: input.completed ?? false,
     completedAt: input.completed ? new Date(input.end) : null,
+    claimSource: null,
     isNotUsable: input.notUsable ?? false,
     orderIndex: null,
     source,

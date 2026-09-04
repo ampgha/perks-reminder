@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useId, useState, useTransition } from 'react';
+import React, { useId, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { formatDate } from '@/lib/dateUtils';
 import {
@@ -10,39 +10,30 @@ import {
   markFullCompletionAction,
   setBenefitTrackingModeAction,
 } from '@/app/benefits/actions';
-import type { BenefitTrackingMode } from '@/lib/benefit-tracking-modes';
-import type { DisplayBenefitStatus } from '@/lib/benefit-dashboard-client';
+import {
+  DEFAULT_BENEFIT_TRACKING_CONFIGURATION,
+  benefitTrackingConfigurationFormFields,
+  summarizeBenefitTrackingConfiguration,
+  type BenefitTrackingConfiguration,
+} from '@/lib/benefit-tracking-modes';
+import {
+  resolveBenefitClaimedValue,
+  type DisplayBenefitStatus,
+} from '@/lib/benefit-dashboard-client';
 import { calculateCompletionPercentage } from '@/lib/partial-completion';
 import SuggestCorrectionLink from '@/components/SuggestCorrectionLink';
-
-const TRACKING_MODE_OPTIONS: ReadonlyArray<{
-  mode: BenefitTrackingMode;
-  label: string;
-  description: string;
-}> = [
-  {
-    mode: 'TRACK',
-    label: 'Track every cycle',
-    description: 'Confirm this benefit yourself each cycle.',
-  },
-  {
-    mode: 'AUTO_CLAIM',
-    label: 'Always claim it for me',
-    description: 'Opens each cycle already claimed. Still counts toward ROI.',
-  },
-  {
-    mode: 'IGNORE',
-    label: 'Ignore this benefit',
-    description: 'Moves it to the Ignored tab and drops it from totals and ROI.',
-  },
-];
+import BenefitTrackingEditor from '@/components/BenefitTrackingEditor';
 
 interface BenefitCardClientProps {
   status: DisplayBenefitStatus;
   onStatusChange?: (statusId: string, newIsCompleted: boolean, newUsedAmount?: number) => void;
   onDelete?: (benefitId: string) => void;
   onPartialCompletionChange?: (statusId: string, newUsedAmount: number, isNowComplete: boolean) => void;
-  onTrackingModeChange?: (statusId: string, previousMode: BenefitTrackingMode, mode: BenefitTrackingMode) => void;
+  onTrackingModeChange?: (
+    statusId: string,
+    previousConfiguration: BenefitTrackingConfiguration,
+    configuration: BenefitTrackingConfiguration
+  ) => void;
   isScheduled?: boolean;
   /** Render a read-only card from the dashboard's Ignored tab. */
   isIgnoredView?: boolean;
@@ -58,34 +49,30 @@ export default function BenefitCardClient({ status, onStatusChange, onDelete, on
   const [showTrackingMenu, setShowTrackingMenu] = useState(false);
 
   const trackingPanelId = useId();
-  const [trackingMode, setTrackingMode] = useState<BenefitTrackingMode>(status.trackingMode ?? 'TRACK');
-  const trackingModeLabel = TRACKING_MODE_OPTIONS.find((option) => option.mode === trackingMode)?.label ?? 'Track every cycle';
+  const trackingConfiguration = status.trackingConfiguration
+    ?? DEFAULT_BENEFIT_TRACKING_CONFIGURATION;
+  const trackingSummary = summarizeBenefitTrackingConfiguration({
+    configuration: trackingConfiguration,
+    maxAmount: status.benefit.maxAmount,
+    occurrencesInCycle: status.benefit.occurrencesInCycle,
+  });
 
-  // The tracking action revalidates the server data, but this card can remain
-  // mounted in the dashboard's local mirror. Keep the control responsive until
-  // the parent receives fresh props, while still treating the server action as
-  // the source of truth (only update after it succeeds).
-  useEffect(() => {
-    setTrackingMode(status.trackingMode ?? 'TRACK');
-  }, [status.trackingMode]);
-
-  const handleTrackingModeChange = (mode: BenefitTrackingMode) => {
-    if (mode === trackingMode) {
-      setShowTrackingMenu(false);
-      return;
-    }
-    const previousMode = trackingMode;
+  const handleTrackingConfigurationSave = (configuration: BenefitTrackingConfiguration) => {
+    const previousConfiguration = trackingConfiguration;
     const formData = new FormData();
     formData.append('benefitStatusId', status.id);
-    formData.append('trackingMode', mode);
+    for (const [name, value] of Object.entries(
+      benefitTrackingConfigurationFormFields(configuration)
+    )) {
+      formData.append(name, value);
+    }
 
     startTransition(async () => {
       try {
         setActionError(null);
         await setBenefitTrackingModeAction(formData);
-        setTrackingMode(mode);
         setShowTrackingMenu(false);
-        onTrackingModeChange?.(status.id, previousMode, mode);
+        onTrackingModeChange?.(status.id, previousConfiguration, configuration);
       } catch (error) {
         console.error('Failed to set benefit tracking mode:', error);
         setActionError(error instanceof Error ? error.message : 'Failed to update tracking mode.');
@@ -97,6 +84,16 @@ export default function BenefitCardClient({ status, onStatusChange, onDelete, on
   const usedAmount = status.usedAmount ?? 0;
   const remainingAmount = Math.max(0, benefitAmount - usedAmount);
   const completionPercent = calculateCompletionPercentage(usedAmount, benefitAmount);
+  const displayedClaimedAmount = status.isCompleted
+    ? resolveBenefitClaimedValue(status)
+    : usedAmount;
+  const showAmountBreakdown = benefitAmount > 0
+    && displayedClaimedAmount < benefitAmount
+    && (status.isCompleted || displayedClaimedAmount > 0);
+  const displayedCompletionPercent = calculateCompletionPercentage(
+    displayedClaimedAmount,
+    benefitAmount
+  );
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -267,19 +264,19 @@ export default function BenefitCardClient({ status, onStatusChange, onDelete, on
                         ? 'text-amber-600 dark:text-amber-400'
                         : 'text-muted-foreground'
                   }`}>
-                    {hasPartialProgress ? (
+                    {showAmountBreakdown ? (
                       <span>
-                        ${usedAmount.toFixed(2)} <span className="text-sm font-normal text-gray-500">of ${benefitAmount.toFixed(2)}</span>
+                        ${displayedClaimedAmount.toFixed(2)} <span className="text-sm font-normal text-gray-500">of ${benefitAmount.toFixed(2)}</span>
                       </span>
                     ) : (
                       <span>${benefitAmount.toFixed(2)}</span>
                     )}
                   </p>
-                  {hasPartialProgress && (
+                  {showAmountBreakdown && (
                     <div className="mt-2 w-full bg-muted rounded-full h-2">
                       <div
-                        className="bg-amber-500 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${completionPercent}%` }}
+                        className={`${isCompleted ? 'bg-emerald-500' : 'bg-amber-500'} h-2 rounded-full transition-all duration-300`}
+                        style={{ width: `${displayedCompletionPercent}%` }}
                       />
                     </div>
                   )}
@@ -367,7 +364,7 @@ export default function BenefitCardClient({ status, onStatusChange, onDelete, on
             />
           </div>
 
-          {actionError && (
+          {actionError && !showTrackingMenu && (
             <div className="sm:pl-11">
               <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200" role="alert">
                 {actionError}
@@ -379,7 +376,7 @@ export default function BenefitCardClient({ status, onStatusChange, onDelete, on
           <div className="sm:pl-11">
             <div className="flex flex-col sm:flex-row gap-2">
               {/* Completion buttons - hide for scheduled benefits */}
-              {!isIgnoredView && !isScheduled && trackingMode !== 'AUTO_CLAIM' && (
+              {!isIgnoredView && !isScheduled && trackingConfiguration.mode !== 'AUTO_CLAIM' && (
                 <>
                   {isCompleted ? (
                     // For completed benefits, show "Mark Pending" to undo
@@ -465,10 +462,10 @@ export default function BenefitCardClient({ status, onStatusChange, onDelete, on
                 onClick={() => setShowTrackingMenu((open) => !open)}
                 aria-expanded={showTrackingMenu}
                 aria-controls={trackingPanelId}
-                aria-label={`Tracking mode: ${trackingModeLabel}. ${showTrackingMenu ? 'Close' : 'Choose'} tracking mode`}
+                aria-label={`Tracking mode: ${trackingSummary}. ${showTrackingMenu ? 'Close' : 'Choose'} tracking mode`}
                 className={`w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-medium border transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${
-                  showTrackingMenu || trackingMode !== 'TRACK'
-                    ? 'border-indigo-400 bg-indigo-50 text-indigo-950 shadow-sm dark:border-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-100'
+                  showTrackingMenu || trackingConfiguration.mode !== 'TRACK'
+                    ? 'border-indigo-300 bg-accent text-foreground dark:border-indigo-700'
                     : 'border-border bg-card text-foreground hover:bg-accent'
                 } ${isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
@@ -477,7 +474,7 @@ export default function BenefitCardClient({ status, onStatusChange, onDelete, on
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
-                  <span>Tracking: {trackingModeLabel}</span>
+                  {trackingSummary}
                   <svg
                     aria-hidden="true"
                     className={`h-3 w-3 ml-1 transition-transform ${showTrackingMenu ? 'rotate-180' : ''}`}
@@ -514,56 +511,20 @@ export default function BenefitCardClient({ status, onStatusChange, onDelete, on
             {showTrackingMenu && (
               <div
                 id={trackingPanelId}
-                className="mt-2 rounded-lg border border-border bg-background/60 p-2"
+                className="mt-2 rounded-lg border border-border bg-background/60 p-3"
               >
-                <p className="px-2 pb-1 pt-0.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  How should this benefit be tracked?
-                </p>
-                <div className="flex flex-col gap-1">
-                  {TRACKING_MODE_OPTIONS.map((option) => {
-                    const isActive = option.mode === trackingMode;
-                    return (
-                      <button
-                        key={option.mode}
-                        type="button"
-                        disabled={isPending}
-                        aria-pressed={isActive}
-                        onClick={() => handleTrackingModeChange(option.mode)}
-                        className={`w-full rounded-md border px-3 py-2 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-ring ${
-                          isActive
-                            ? 'border-indigo-400 bg-indigo-50 shadow-sm dark:border-indigo-600 dark:bg-indigo-950/40'
-                            : 'border-transparent hover:bg-accent'
-                        } ${isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      >
-                        <div className="flex items-center justify-between gap-2 text-sm font-medium text-foreground">
-                          <span className="flex items-center">
-                            <span
-                              aria-hidden="true"
-                              className={`mr-2 flex h-4 w-4 items-center justify-center rounded-full border ${
-                                isActive
-                                  ? 'border-indigo-600 bg-indigo-600 text-white dark:border-indigo-400 dark:bg-indigo-400 dark:text-indigo-950'
-                                  : 'border-muted-foreground/50'
-                              }`}
-                            >
-                              {isActive && (
-                                <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
-                              )}
-                            </span>
-                            {option.label}
-                          </span>
-                          {isActive && (
-                            <span className="text-xs font-semibold uppercase tracking-wide text-indigo-700 dark:text-indigo-300">
-                              Current
-                            </span>
-                          )}
-                        </div>
-                        <div className="mt-0.5 text-xs text-muted-foreground">{option.description}</div>
-                      </button>
-                    );
-                  })}
-                </div>
+                <BenefitTrackingEditor
+                  initialConfiguration={trackingConfiguration}
+                  maxAmount={status.benefit.maxAmount}
+                  occurrencesInCycle={status.benefit.occurrencesInCycle}
+                  isPending={isPending}
+                  error={actionError}
+                  onSave={handleTrackingConfigurationSave}
+                  onCancel={() => {
+                    setActionError(null);
+                    setShowTrackingMenu(false);
+                  }}
+                />
               </div>
             )}
           </div>
