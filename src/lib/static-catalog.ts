@@ -52,7 +52,7 @@ export interface PublicStaticCard extends Omit<StaticPredefinedCard, 'benefits'>
   updatedAt: string;
 }
 
-export const STATIC_CATALOG_UPDATED_AT = '2026-08-27';
+export const STATIC_CATALOG_UPDATED_AT = '2026-09-04';
 
 export const predefinedCardsData = [
     {
@@ -968,6 +968,27 @@ export const predefinedCardsData = [
       ],
     },
     {
+      catalogKey: 'card:citi-strata-premier',
+      name: 'Citi Strata Premier® Card',
+      issuer: 'Citi',
+      annualFee: 95,
+      imageUrl: '/images/cards/citi-strata-premier-card.webp',
+      benefits: [
+        {
+          catalogKey: 'benefit:citi-strata-premier:up-to-100-annual-hotel-benefit-500-stay-through-citi-travel',
+          parentCatalogKey: 'card:citi-strata-premier',
+          description: 'Up to $100 Annual Hotel Benefit ($500+ stay through Citi Travel)',
+          category: 'Travel',
+          maxAmount: 100,
+          frequency: 'YEARLY',
+          percentage: 0,
+          cycleAlignment: 'CALENDAR_FIXED',
+          fixedCycleStartMonth: 1,
+          fixedCycleDurationMonths: 12,
+        },
+      ],
+    },
+    {
       catalogKey: 'card:bilt-blue',
       name: 'Bilt Blue Card',
       issuer: 'Bilt',
@@ -1399,12 +1420,12 @@ Delta Stays is separate from FHR/THC, travel portal credits, and Delta flight cr
       category: 'Travel',
       content: `## Core Requirement
 
-For benefits like the Citi Strata Elite annual hotel benefit, use Citi Travel and satisfy the stay-length requirement shown in the benefit text, such as 2 or more nights.
+Use Citi Travel and satisfy the qualifying booking requirement shown in the benefit text. For example, Citi Strata Premier requires one hotel stay of at least $500 before taxes and fees, while Citi Strata Elite requires a stay of 2 or more nights.
 
 ## Booking Steps
 
 1. Book through Citi Travel while signed into the account with the eligible card.
-2. Confirm the minimum-night requirement before checkout.
+2. Confirm any minimum-spend or minimum-night requirement before checkout.
 3. Pay with the eligible Citi card.
 4. Keep the Citi Travel confirmation and final folio.
 5. Track whether the credit is applied at checkout or posts later as a statement credit.
@@ -1421,13 +1442,13 @@ Citi travel-portal hotel behavior has less public data than Amex and Chase hotel
 
 ## Avoid
 
-- Booking fewer nights than the requirement
+- Booking below the required spend or stay length
 - Assuming regular hotel direct bookings qualify
 - Assuming refund behavior will mirror Chase or Amex credits
 - Forgetting to compare portal pricing`,
       tips: [
         'Use Citi Travel, not a hotel direct booking',
-        'Confirm the minimum-night rule before paying',
+        'Confirm the qualifying spend or stay-length rule before paying',
         'Compare portal and direct rates',
         'Current public data is thinner than for Amex and Chase'
       ]
