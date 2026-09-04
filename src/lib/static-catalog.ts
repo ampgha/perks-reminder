@@ -52,7 +52,7 @@ export interface PublicStaticCard extends Omit<StaticPredefinedCard, 'benefits'>
   updatedAt: string;
 }
 
-export const STATIC_CATALOG_UPDATED_AT = '2026-08-27';
+export const STATIC_CATALOG_UPDATED_AT = '2026-09-04';
 
 export const predefinedCardsData = [
     {
@@ -966,6 +966,14 @@ export const predefinedCardsData = [
           fixedCycleDurationMonths: 48, // 4 years
         },
       ],
+    },
+    {
+      catalogKey: 'card:sephora-credit-card',
+      name: 'Sephora Credit Card',
+      issuer: 'Comenity Capital Bank',
+      annualFee: 0,
+      imageUrl: null,
+      benefits: [],
     },
     {
       catalogKey: 'card:bilt-blue',
