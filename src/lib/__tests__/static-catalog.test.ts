@@ -77,6 +77,35 @@ describe('static catalog', () => {
     ]);
   });
 
+  it('publishes the Marriott Bonvoy Bold limited-time delivery benefits', () => {
+    const card = predefinedCardsData.find(
+      (candidate) => candidate.catalogKey === 'card:marriott-bonvoy-bold',
+    );
+
+    expect(card).toEqual(expect.objectContaining({
+      name: 'Marriott Bonvoy Bold Credit Card',
+      issuer: 'Chase',
+      annualFee: 0,
+      imageUrl: '/images/cards/chase-marriott-bonvoy-bold.png',
+    }));
+    expect(card?.benefits).toEqual([
+      expect.objectContaining({
+        catalogKey: 'benefit:marriott-bonvoy-bold:10-quarterly-doordash-non-restaurant-discount-through-2027',
+        parentCatalogKey: 'card:marriott-bonvoy-bold',
+        maxAmount: 10,
+        frequency: 'QUARTERLY',
+        cycleAlignment: 'CALENDAR_FIXED',
+      }),
+      expect.objectContaining({
+        catalogKey: 'benefit:marriott-bonvoy-bold:10-monthly-instacart-credit-through-2027',
+        parentCatalogKey: 'card:marriott-bonvoy-bold',
+        maxAmount: 10,
+        frequency: 'MONTHLY',
+        cycleAlignment: 'CALENDAR_FIXED',
+      }),
+    ]);
+  });
+
   it('keeps annual value and suggestions available without a database', () => {
     expect(calculateAnnualBenefitValue(10, 'MONTHLY')).toBe(120);
     expect(getStaticSearchSuggestions()).toEqual(expect.arrayContaining(['American Express', 'Dining', 'amex']));

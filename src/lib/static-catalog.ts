@@ -566,6 +566,37 @@ export const predefinedCardsData = [
       ],
     },
     {
+      catalogKey: 'card:marriott-bonvoy-bold',
+      name: 'Marriott Bonvoy Bold Credit Card',
+      issuer: 'Chase',
+      annualFee: 0,
+      imageUrl: '/images/cards/chase-marriott-bonvoy-bold.png',
+      benefits: [
+        // Both partner promotions end December 31, 2027. Retire these exact
+        // immutable definitions after expiration; do not delete or re-key them.
+        {
+          catalogKey: 'benefit:marriott-bonvoy-bold:10-quarterly-doordash-non-restaurant-discount-through-2027',
+          parentCatalogKey: 'card:marriott-bonvoy-bold',
+          description: '$10 Quarterly DoorDash Discount (Active DashPass; Non-Restaurant Orders; through 12/31/2027)',
+          category: 'Food Delivery',
+          maxAmount: 10,
+          frequency: 'QUARTERLY',
+          percentage: 0,
+          cycleAlignment: 'CALENDAR_FIXED',
+        },
+        {
+          catalogKey: 'benefit:marriott-bonvoy-bold:10-monthly-instacart-credit-through-2027',
+          parentCatalogKey: 'card:marriott-bonvoy-bold',
+          description: '$10 Monthly Instacart Credit (Active Instacart+ Required; through 12/31/2027)',
+          category: 'Food Delivery',
+          maxAmount: 10,
+          frequency: 'MONTHLY',
+          percentage: 0,
+          cycleAlignment: 'CALENDAR_FIXED',
+        },
+      ],
+    },
+    {
       catalogKey: 'card:alaska-visa',
       name: 'Alaska Airlines Visa Signature® credit card',
       issuer: 'Bank of America',
