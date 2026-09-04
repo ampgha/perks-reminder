@@ -1,0 +1,45 @@
+{
+  "$schema": "../schema.json",
+  "name": "World of Hyatt Credit Card",
+  "issuer": "Chase",
+  "annualFee": 95,
+  "imageUrl": "/images/cards/chase-world-of-hyatt.png",
+  "sources": [
+    {
+      "label": "Chase World of Hyatt official product page and offer details",
+      "url": "https://creditcards.chase.com/travel-credit-cards/world-of-hyatt-credit-card",
+      "accessed": "2026-09-04"
+    },
+    {
+      "label": "Chase World of Hyatt official Free Night Awards page",
+      "url": "https://www.chase.com/personal/credit-cards/hyatt/world-hyatt/free-awards",
+      "accessed": "2026-09-04"
+    },
+    {
+      "label": "The Points Guy current World of Hyatt Credit Card review",
+      "url": "https://thepointsguy.com/credit-cards/reviews/world-of-hyatt-credit-card-review/",
+      "accessed": "2026-09-04"
+    }
+  ],
+  "benefits": [
+    {
+      "description": "Annual Category 1–4 Free Night Award",
+      "category": "Travel",
+      "maxAmount": 0,
+      "frequency": "YEARLY",
+      "cycleAlignment": "CARD_ANNIVERSARY",
+      "notes": "Issued to the primary cardmember after each cardmember anniversary when the account is open and not in default. Allow up to 10 weeks for issuance. The award is valid for one standard-room night at a participating Category 1–4 Hyatt property and expires 12 months after issuance."
+    },
+    {
+      "description": "Category 1–4 Free Night Award after $15,000 Calendar-Year Spend",
+      "category": "Travel",
+      "maxAmount": 0,
+      "frequency": "YEARLY",
+      "cycleAlignment": "CALENDAR_FIXED",
+      "fixedCycleStartMonth": 1,
+      "fixedCycleDurationMonths": 12,
+      "notes": "A one-time bonus in each calendar year only after $15,000 in qualifying purchases net of returns or refunds. Authorized-user purchases count toward the threshold, but the award is issued only to the primary cardmember. Spending does not carry across calendar years. Allow up to 8 weeks for issuance; the certificate expires 12 months after issuance."
+    }
+  ],
+  "reviewNotes": "Both certificate benefits intentionally use maxAmount 0 because they are non-dollar awards; the catalog must not assign them a subjective cash value. Excluded as non-trackable or non-cyclical: the welcome offer, point multipliers, Discoverist status, tier-qualifying night credits, and protections. Global synchronization disposition: expect create actions for the new keyed card and two keyed benefits; adoption is acceptable only if a later dry-run finds an exact, bidirectionally unique unkeyed legacy match. No database synchronization is part of this change. Status materialization disposition: after a separately authorized successful sync, run insert-only materialization for missing Standard Benefit Status rows on every existing active linked Physical Card without resetting user state or cycle history. Benefit Usage Guide disposition: both descriptions intentionally resolve to the existing benefit-checklist guide; no new guide is required. Retirement disposition: these are ongoing benefits with no announced end date. If Chase later changes or retires either definition, preserve these immutable catalog keys for the same semantic definitions, retire replaced definitions rather than deleting them, create no future statuses for retired definitions, and preserve prior status history."
+}
