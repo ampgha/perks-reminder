@@ -1,0 +1,21 @@
+{
+  "$schema": "../schema.json",
+  "name": "Capital One Savor Cash Rewards Credit Card",
+  "issuer": "Capital One",
+  "annualFee": 0,
+  "imageUrl": "/images/cards/capital-one-savor-cash-rewards-credit-card.png",
+  "sources": [
+    {
+      "label": "Capital One Savor official product page",
+      "url": "https://www.capitalone.com/credit-cards/cash-back/savor/",
+      "accessed": "2026-09-04"
+    },
+    {
+      "label": "Capital One 2018 legacy Savor launch announcement",
+      "url": "https://investor.capitalone.com/news-releases/news-release-details/capital-oner-introduces-newest-savorr-card-cash-back-card-now/",
+      "accessed": "2026-09-04"
+    }
+  ],
+  "benefits": [],
+  "reviewNotes": "This definition represents the currently marketed Capital One Savor product with a $0 annual fee. It is not the discontinued legacy Savor product launched with a $95 annual fee after the first year and a 4% dining and entertainment earn rate; existing cardholders should verify the product name and fee on their statement or current terms before selecting this catalog entry. The current product's uncapped cash-back earning rates are not recurring fixed-value benefits, and its new-card bonus is a one-time acquisition offer, so neither is included. The image is official Capital One card art from https://ecm.capitalone.com/WCM/card/products/new-savor-card-art/mobile.png. Rollout disposition: synchronization creates one card and no benefits; benefit status propagation and usage-guide linkage are not applicable. No database synchronization was run as part of this intake."
+}

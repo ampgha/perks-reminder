@@ -9,7 +9,7 @@ function copyCatalog(): StaticPredefinedCard[] {
 describe("global static catalog validation", () => {
   it("validates every explicit identity and preserves AMEX invariants", () => {
     expect(validateStaticCatalog(predefinedCardsData)).toEqual({
-      cards: 37,
+      cards: 38,
       benefits: 134,
       amexCards: 12,
       amexBenefits: 56,
@@ -26,7 +26,7 @@ describe("global static catalog validation", () => {
     card.benefits[0].description = "Rewritten current benefit terms";
     card.benefits = [...card.benefits].reverse();
 
-    expect(validateStaticCatalog(catalog)).toEqual(expect.objectContaining({ cards: 37, benefits: 134 }));
+    expect(validateStaticCatalog(catalog)).toEqual(expect.objectContaining({ cards: 38, benefits: 134 }));
     expect(card.catalogKey).toBe(originalCardKey);
     expect(card.benefits.map((benefit) => benefit.catalogKey).sort()).toEqual(originalBenefitKeys);
   });
@@ -36,6 +36,17 @@ describe("global static catalog validation", () => {
     const platinum = catalog.find((card) => card.catalogKey === "card:american-express-platinum-card")!;
     platinum.benefits = [...platinum.benefits].reverse();
     expect(validateStaticCatalog(catalog).amexBenefits).toBe(56);
+  });
+
+  it("keeps the current no-fee Capital One Savor distinct from the legacy product", () => {
+    expect(predefinedCardsData.find((card) => card.catalogKey === "card:capital-one-savor")).toEqual({
+      catalogKey: "card:capital-one-savor",
+      name: "Capital One Savor Cash Rewards Credit Card",
+      issuer: "Capital One",
+      annualFee: 0,
+      imageUrl: "/images/cards/capital-one-savor-cash-rewards-credit-card.png",
+      benefits: [],
+    });
   });
 
   it.each([

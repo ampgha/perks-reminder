@@ -4,6 +4,12 @@ High-resolution card art is usually sourced from issuer pages or community
 Apple Pay card-background captures. When replacing images from forum posts, keep
 the source URL here so future updates can verify provenance.
 
+## Issuer-hosted Card Art
+
+| Local image | Source |
+| --- | --- |
+| `public/images/cards/capital-one-savor-cash-rewards-credit-card.png` | https://ecm.capitalone.com/WCM/card/products/new-savor-card-art/mobile.png |
+
 ## US Card Forum Apple Pay Card Art
 
 Source thread: https://www.uscardforum.com/t/topic/29408
