@@ -22,6 +22,18 @@ describe('static catalog', () => {
       });
   });
 
+  it('includes the closed-loop Sephora card without ineligible rewards benefits', () => {
+    const card = predefinedCardsData.find((candidate) => candidate.catalogKey === 'card:sephora-credit-card');
+
+    expect(card).toMatchObject({
+      name: 'Sephora Credit Card',
+      issuer: 'Comenity Capital Bank',
+      annualFee: 0,
+      imageUrl: null,
+      benefits: [],
+    });
+  });
+
   it('projects predefined cards with stable public ids and usage-guide links', () => {
     const cards = getPublicStaticCards();
 

@@ -83,7 +83,7 @@ describe("global catalog synchronization", () => {
     const existing = snapshot();
     const plan = planCatalogSynchronization({ source: predefinedCardsData, snapshot: existing });
     expect(summarizeCatalogSyncPlan(plan)).toEqual({
-      cards: { create: 0, adopt: 0, update: 0, retire: 0, unchanged: 44 },
+      cards: { create: 0, adopt: 0, update: 0, retire: 0, unchanged: 45 },
       benefits: { create: 0, adopt: 0, update: 0, retire: 0, unchanged: 137 },
       conflictCount: 0,
     });
@@ -97,7 +97,7 @@ describe("global catalog synchronization", () => {
     existing.benefits.forEach((benefit) => { benefit.catalogKey = null; });
     const plan = planCatalogSynchronization({ source: predefinedCardsData, snapshot: existing });
     expect(summarizeCatalogSyncPlan(plan)).toEqual(expect.objectContaining({
-      cards: expect.objectContaining({ adopt: 44, create: 0 }),
+      cards: expect.objectContaining({ adopt: 45, create: 0 }),
       benefits: expect.objectContaining({ adopt: 137, create: 0 }),
       conflictCount: 0,
     }));
@@ -263,7 +263,7 @@ describe("global catalog synchronization", () => {
     const report = await runGlobalCatalogSyncOperator({ source: predefinedCardsData, database: client });
     expect(report).toEqual(expect.objectContaining({
       mode: "dry-run",
-      source: { cards: 44, benefits: 137 },
+      source: { cards: 45, benefits: 137 },
       plan: expect.objectContaining({ conflictCount: 0 }),
     }));
     expect(client.predefinedCard.create).not.toHaveBeenCalled();
@@ -305,10 +305,10 @@ describe("global catalog synchronization", () => {
       confirmApply: GLOBAL_CATALOG_SYNC_CONFIRMATION,
       now: UPDATED_AT,
     });
-    expect(report.plan.cards.create).toBe(44);
+    expect(report.plan.cards.create).toBe(45);
     expect(report.plan.benefits.create).toBe(137);
     expect(client.$transaction).toHaveBeenCalledWith(expect.any(Function), { isolationLevel: "Serializable" });
-    expect(client.predefinedCard.create).toHaveBeenCalledTimes(44);
+    expect(client.predefinedCard.create).toHaveBeenCalledTimes(45);
     expect(client.predefinedBenefit.create).toHaveBeenCalledTimes(137);
   });
 

@@ -1062,6 +1062,14 @@ export const predefinedCardsData = [
       benefits: [],
     },
     {
+      catalogKey: 'card:sephora-credit-card',
+      name: 'Sephora Credit Card',
+      issuer: 'Comenity Capital Bank',
+      annualFee: 0,
+      imageUrl: null,
+      benefits: [],
+    },
+    {
       catalogKey: 'card:bilt-blue',
       name: 'Bilt Blue Card',
       issuer: 'Bilt',
