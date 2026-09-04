@@ -42,8 +42,11 @@ function validateTemplate(file) {
   assertString(errors, template.issuer, 'issuer');
   assertNumber(errors, template.annualFee, 'annualFee');
 
-  if (typeof template.imageUrl !== 'string' || !template.imageUrl.startsWith('/images/cards/')) {
-    errors.push('imageUrl must start with /images/cards/');
+  if (
+    template.imageUrl !== null &&
+    (typeof template.imageUrl !== 'string' || !template.imageUrl.startsWith('/images/cards/'))
+  ) {
+    errors.push('imageUrl must be null or start with /images/cards/');
   }
 
   if (!Array.isArray(template.sources) || template.sources.length === 0) {
