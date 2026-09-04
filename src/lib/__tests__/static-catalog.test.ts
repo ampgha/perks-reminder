@@ -51,6 +51,41 @@ describe('static catalog', () => {
     }));
   });
 
+  it('publishes both World of Hyatt Category 1–4 certificate cycles', () => {
+    const card = predefinedCardsData.find(
+      (candidate) => candidate.catalogKey === 'card:world-of-hyatt',
+    );
+
+    expect(card).toEqual(expect.objectContaining({
+      name: 'World of Hyatt Credit Card',
+      issuer: 'Chase',
+      annualFee: 95,
+      imageUrl: '/images/cards/chase-world-of-hyatt.png',
+    }));
+    expect(card?.benefits).toEqual([
+      expect.objectContaining({
+        catalogKey: 'benefit:world-of-hyatt:annual-category-1-4-free-night-award',
+        parentCatalogKey: 'card:world-of-hyatt',
+        maxAmount: 0,
+        frequency: 'YEARLY',
+        cycleAlignment: 'CARD_ANNIVERSARY',
+      }),
+      expect.objectContaining({
+        catalogKey: 'benefit:world-of-hyatt:category-1-4-free-night-award-after-15k-calendar-year-spend',
+        parentCatalogKey: 'card:world-of-hyatt',
+        maxAmount: 0,
+        frequency: 'YEARLY',
+        cycleAlignment: 'CALENDAR_FIXED',
+        fixedCycleStartMonth: 1,
+        fixedCycleDurationMonths: 12,
+      }),
+    ]);
+    expect(
+      getPublicStaticCardByName('World of Hyatt Credit Card')?.benefits
+        .map((benefit) => benefit.usageWay?.slug),
+    ).toEqual(['benefit-checklist', 'benefit-checklist']);
+  });
+
   it('keeps annual value and suggestions available without a database', () => {
     expect(calculateAnnualBenefitValue(10, 'MONTHLY')).toBe(120);
     expect(getStaticSearchSuggestions()).toEqual(expect.arrayContaining(['American Express', 'Dining', 'amex']));

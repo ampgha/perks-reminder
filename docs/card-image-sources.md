@@ -4,6 +4,12 @@ High-resolution card art is usually sourced from issuer pages or community
 Apple Pay card-background captures. When replacing images from forum posts, keep
 the source URL here so future updates can verify provenance.
 
+## Official Issuer Card Art
+
+| Local image | Source |
+| --- | --- |
+| `public/images/cards/chase-world-of-hyatt.png` | https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/world_of_hyatt_card.png |
+
 ## US Card Forum Apple Pay Card Art
 
 Source thread: https://www.uscardforum.com/t/topic/29408

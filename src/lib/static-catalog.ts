@@ -52,7 +52,7 @@ export interface PublicStaticCard extends Omit<StaticPredefinedCard, 'benefits'>
   updatedAt: string;
 }
 
-export const STATIC_CATALOG_UPDATED_AT = '2026-08-27';
+export const STATIC_CATALOG_UPDATED_AT = '2026-09-04';
 
 export const predefinedCardsData = [
     {
@@ -554,6 +554,37 @@ export const predefinedCardsData = [
           maxAmount: 0,
           frequency: 'YEARLY',
           percentage: 0,
+        },
+      ],
+    },
+    {
+      catalogKey: 'card:world-of-hyatt',
+      name: 'World of Hyatt Credit Card',
+      issuer: 'Chase',
+      annualFee: 95,
+      imageUrl: '/images/cards/chase-world-of-hyatt.png',
+      benefits: [
+        {
+          catalogKey: 'benefit:world-of-hyatt:annual-category-1-4-free-night-award',
+          parentCatalogKey: 'card:world-of-hyatt',
+          description: 'Annual Category 1–4 Free Night Award',
+          category: 'Travel',
+          maxAmount: 0,
+          frequency: 'YEARLY',
+          percentage: 0,
+          cycleAlignment: 'CARD_ANNIVERSARY',
+        },
+        {
+          catalogKey: 'benefit:world-of-hyatt:category-1-4-free-night-award-after-15k-calendar-year-spend',
+          parentCatalogKey: 'card:world-of-hyatt',
+          description: 'Category 1–4 Free Night Award after $15,000 Calendar-Year Spend',
+          category: 'Travel',
+          maxAmount: 0,
+          frequency: 'YEARLY',
+          percentage: 0,
+          cycleAlignment: 'CALENDAR_FIXED',
+          fixedCycleStartMonth: 1,
+          fixedCycleDurationMonths: 12,
         },
       ],
     },
