@@ -10,6 +10,7 @@ the source URL here so future updates can verify provenance.
 | --- | --- |
 | `public/images/cards/city-national-cash-back-credit-card.jpg` | https://www.cnb.com/content/cnb/en/personal-banking/lending/credit-cards/cash-back.thumb.800.480.png |
 | `public/images/cards/chase-marriott-bonvoy-bold.png` | https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/marriott_bonvoy_bold_card_NAF.png |
+| `public/images/cards/capital-one-savor-cash-rewards-credit-card.png` | https://ecm.capitalone.com/WCM/card/products/new-savor-card-art/mobile.png |
 
 ## US Card Forum Apple Pay Card Art
 

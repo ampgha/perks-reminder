@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-04T09:37:47.000Z",
+  "updatedAt": "2026-09-04T09:41:26.756Z",
   "images": [
     {
       "cardName": "alaska-airlines-visa-signature-credit-card",
@@ -112,6 +112,21 @@
       "sha256": "56b0a53568accee88e657ddbbc0894212d0f2ea74df03dc71a8b36f56b05655c",
       "duplicates": [],
       "validatedAt": "2026-05-16T20:15:50.589Z"
+    },
+    {
+      "cardName": "Capital One Savor Cash Rewards Credit Card",
+      "filename": "capital-one-savor-cash-rewards-credit-card.png",
+      "path": "/images/cards/capital-one-savor-cash-rewards-credit-card.png",
+      "source": "direct-url",
+      "sourceUrl": "https://ecm.capitalone.com/WCM/card/products/new-savor-card-art/mobile.png",
+      "width": 300,
+      "height": 188,
+      "type": "png",
+      "sizeBytes": 76629,
+      "sha256": "a80d93b31169f7a0f76d5ecce3d3e97f8661f0ca33b6176cd486a1c0ee754221",
+      "duplicates": [],
+      "overwritten": true,
+      "ingestedAt": "2026-09-04T09:41:26.743Z"
     },
     {
       "cardName": "capital-one-venture-x",

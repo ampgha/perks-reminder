@@ -104,6 +104,14 @@ export const predefinedCardsData = [
     },
     americanExpressCardCatalog["American Express Gold Card"],
     {
+      catalogKey: 'card:capital-one-savor',
+      name: 'Capital One Savor Cash Rewards Credit Card',
+      issuer: 'Capital One',
+      annualFee: 0,
+      imageUrl: '/images/cards/capital-one-savor-cash-rewards-credit-card.png',
+      benefits: [],
+    },
+    {
       catalogKey: 'card:venture-x',
       name: 'Capital One Venture X',
       issuer: 'Capital One',
