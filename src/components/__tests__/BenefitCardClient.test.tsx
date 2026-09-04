@@ -13,7 +13,10 @@ jest.mock('@/app/benefits/actions', () => ({
   deleteCustomBenefitAction: jest.fn().mockResolvedValue(undefined),
   addPartialCompletionAction: jest.fn().mockResolvedValue({ success: true, isComplete: false, newUsedAmount: 10 }),
   markFullCompletionAction: jest.fn().mockResolvedValue({ success: true, usedAmount: 10 }),
-  setBenefitTrackingModeAction: jest.fn().mockResolvedValue({ success: true }),
+  setBenefitTrackingModeAction: jest.fn().mockResolvedValue({
+    success: true,
+    configuration: { mode: 'AUTO_CLAIM', value: { kind: 'FULL' } },
+  }),
 }));
 
 jest.mock('@/lib/partial-completion', () => ({
@@ -165,7 +168,7 @@ describe('BenefitCardClient', () => {
     render(<BenefitCardClient status={status} />);
 
     fireEvent.click(screen.getByRole('button', { name: /Auto: full \(\$10\.00\)/i }));
-    fireEvent.click(screen.getByRole('radio', { name: /A partial amount/i }));
+    fireEvent.click(screen.getByRole('radio', { name: /Custom tracked value/i }));
     fireEvent.change(screen.getByLabelText(/Tracked value per cycle/i), {
       target: { value: '6.50' },
     });
@@ -194,5 +197,29 @@ describe('BenefitCardClient', () => {
     expect(screen.getByText('$6.50')).toBeInTheDocument();
     expect(screen.getByText('of $10.00')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Auto: \$6\.50\/cycle/i })).toBeInTheDocument();
+  });
+
+  it('shows a returned server validation error without closing the editor', async () => {
+    const action = setBenefitTrackingModeAction as jest.MockedFunction<
+      typeof setBenefitTrackingModeAction
+    >;
+    action.mockResolvedValueOnce({
+      success: false,
+      error: 'The benefit value changed. Enter an amount no greater than $5.00.',
+    });
+    const status = createMockStatus({
+      trackingConfiguration: { mode: 'AUTO_CLAIM', value: { kind: 'FULL' } },
+    });
+    render(<BenefitCardClient status={status} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /Auto: full/i }));
+    fireEvent.click(screen.getByRole('radio', { name: /Custom tracked value/i }));
+    fireEvent.change(screen.getByLabelText(/Tracked value per cycle/i), {
+      target: { value: '6.50' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Save tracking choice/i }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('no greater than $5.00');
+    expect(screen.getByLabelText(/Tracked value per cycle/i)).toHaveValue('6.50');
   });
 });

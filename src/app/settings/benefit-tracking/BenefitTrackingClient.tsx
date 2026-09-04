@@ -78,7 +78,11 @@ export default function BenefitTrackingClient({
     startTransition(async () => {
       try {
         setError(null);
-        await updateBenefitTrackingPreferenceAction(formData);
+        const result = await updateBenefitTrackingPreferenceAction(formData);
+        if (!result.success) {
+          setError(result.error);
+          return;
+        }
         setEditingId(null);
       } catch (updateError) {
         console.error('Failed to update tracking preference:', updateError);
@@ -101,7 +105,11 @@ export default function BenefitTrackingClient({
     startTransition(async () => {
       try {
         setError(null);
-        await resetBenefitTrackingPreferenceAction(formData);
+        const result = await resetBenefitTrackingPreferenceAction(formData);
+        if (!result.success) {
+          setError(result.error);
+          return;
+        }
         setEditingId(null);
       } catch (resetError) {
         console.error('Failed to reset tracking preference:', resetError);

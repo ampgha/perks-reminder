@@ -409,6 +409,56 @@ describe('BenefitsDisplayClient', () => {
     expect(screen.getByRole('button', { name: /Upcoming \(0\)/i })).toBeInTheDocument();
   });
 
+  it('mirrors a benefit-wide auto-claim across every open occurrence', () => {
+    const first = benefitStatus('auto-fixed-1', 'First occurrence', 'MONTHLY');
+    const second = {
+      ...benefitStatus('auto-fixed-2', 'Second occurrence', 'MONTHLY'),
+      benefitId: first.benefitId,
+      occurrenceIndex: 1,
+      benefit: { ...benefitStatus('auto-fixed-2', 'Second occurrence', 'MONTHLY').benefit, id: first.benefit.id },
+    };
+    render(
+      <BenefitsDisplayClient
+        {...defaultProps}
+        upcomingBenefits={[first, second]}
+        totalUnusedValue={200}
+      />
+    );
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Auto claim $40' })[0]);
+
+    expect(screen.getByRole('button', { name: /Claimed \(2\)/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Upcoming \(0\)/i })).toBeInTheDocument();
+    expect(screen.getAllByText('$80.00').length).toBeGreaterThan(0);
+  });
+
+  it('moves every occurrence for one benefit into the Ignored tab', () => {
+    const open = benefitStatus('ignore-open', 'Open occurrence', 'MONTHLY');
+    const scheduledBase = benefitStatus('ignore-future', 'Future occurrence', 'MONTHLY');
+    const scheduled = {
+      ...scheduledBase,
+      benefitId: open.benefitId,
+      occurrenceIndex: 1,
+      cycleStartDate: new Date('2027-01-01T00:00:00.000Z'),
+      cycleEndDate: new Date('2027-01-31T23:59:59.999Z'),
+      benefit: { ...scheduledBase.benefit, id: open.benefit.id },
+    };
+    render(
+      <BenefitsDisplayClient
+        {...defaultProps}
+        upcomingBenefits={[open]}
+        scheduledBenefits={[scheduled]}
+        totalUnusedValue={100}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Ignore' }));
+
+    expect(screen.getByRole('button', { name: /Ignored \(2\)/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Upcoming \(0\)/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Scheduled/i })).not.toBeInTheDocument();
+  });
+
   it('removes an ignored benefit from the dashboard and totals', () => {
     render(
       <BenefitsDisplayClient

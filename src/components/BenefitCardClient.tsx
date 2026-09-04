@@ -70,9 +70,13 @@ export default function BenefitCardClient({ status, onStatusChange, onDelete, on
     startTransition(async () => {
       try {
         setActionError(null);
-        await setBenefitTrackingModeAction(formData);
+        const result = await setBenefitTrackingModeAction(formData);
+        if (!result.success) {
+          setActionError(result.error);
+          return;
+        }
         setShowTrackingMenu(false);
-        onTrackingModeChange?.(status.id, previousConfiguration, configuration);
+        onTrackingModeChange?.(status.id, previousConfiguration, result.configuration);
       } catch (error) {
         console.error('Failed to set benefit tracking mode:', error);
         setActionError(error instanceof Error ? error.message : 'Failed to update tracking mode.');

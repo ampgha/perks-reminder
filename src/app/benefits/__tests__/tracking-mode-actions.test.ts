@@ -152,7 +152,10 @@ describe('setBenefitTrackingModeAction', () => {
       trackingMode: 'AUTO_CLAIM',
       autoClaimValueKind: 'FIXED',
       autoClaimAmount: '15abc',
-    }))).rejects.toThrow('no more than two decimal places');
+    }))).resolves.toEqual({
+      success: false,
+      error: expect.stringContaining('no more than two decimal places'),
+    });
     expect(mockFindStatus).not.toHaveBeenCalled();
     expect(mockApplyConfiguration).not.toHaveBeenCalled();
   });
@@ -162,7 +165,10 @@ describe('setBenefitTrackingModeAction', () => {
       benefitStatusId: 'status-1',
       trackingMode: 'IGNORE',
       autoClaimValueKind: 'FULL',
-    }))).rejects.toThrow('only valid for automatic claiming');
+    }))).resolves.toEqual({
+      success: false,
+      error: expect.stringContaining('only valid for automatic claiming'),
+    });
     expect(mockFindStatus).not.toHaveBeenCalled();
   });
 
@@ -171,18 +177,21 @@ describe('setBenefitTrackingModeAction', () => {
     await expect(setBenefitTrackingModeAction(form({
       benefitStatusId: 'status-1',
       trackingMode: 'IGNORE',
-    }))).rejects.toThrow('User not authenticated');
+    }))).resolves.toEqual({ success: false, error: 'User not authenticated.' });
     expect(mockFindStatus).not.toHaveBeenCalled();
 
     mockGetServerSession.mockResolvedValueOnce(SESSION);
     await expect(setBenefitTrackingModeAction(form({ trackingMode: 'IGNORE' })))
-      .rejects.toThrow('Benefit Status ID is missing');
+      .resolves.toEqual({ success: false, error: 'Benefit Status ID is missing.' });
 
     mockFindStatus.mockResolvedValueOnce(null);
     await expect(setBenefitTrackingModeAction(form({
       benefitStatusId: 'foreign-status',
       trackingMode: 'IGNORE',
-    }))).rejects.toThrow('not found or permission denied');
+    }))).resolves.toEqual({
+      success: false,
+      error: 'Benefit status not found or permission denied.',
+    });
     expect(mockApplyConfiguration).not.toHaveBeenCalled();
   });
 
@@ -195,14 +204,20 @@ describe('setBenefitTrackingModeAction', () => {
       trackingMode: 'AUTO_CLAIM',
       autoClaimValueKind: 'FIXED',
       autoClaimAmount: '15',
-    }))).rejects.toThrow('cannot exceed $10.00');
+    }))).resolves.toEqual({
+      success: false,
+      error: 'Custom tracked value cannot exceed $10.00.',
+    });
     expect(mockRevalidatePath).not.toHaveBeenCalled();
 
     mockApplyConfiguration.mockRejectedValueOnce(new Error('native database detail'));
     await expect(setBenefitTrackingModeAction(form({
       benefitStatusId: 'status-1',
       trackingMode: 'IGNORE',
-    }))).rejects.toThrow('Failed to update benefit tracking mode');
+    }))).resolves.toEqual({
+      success: false,
+      error: 'Failed to update benefit tracking mode.',
+    });
     expect(mockRevalidatePath).not.toHaveBeenCalled();
   });
 });
@@ -256,7 +271,10 @@ describe('updateBenefitTrackingPreferenceAction', () => {
     await expect(updateBenefitTrackingPreferenceAction(form({
       preferenceId: 'foreign-pref',
       trackingMode: 'IGNORE',
-    }))).rejects.toThrow('Tracking preference not found or permission denied');
+    }))).resolves.toEqual({
+      success: false,
+      error: 'Tracking preference not found or permission denied.',
+    });
     expect(mockApplyConfiguration).not.toHaveBeenCalled();
   });
 
@@ -266,7 +284,10 @@ describe('updateBenefitTrackingPreferenceAction', () => {
       trackingMode: 'AUTO_CLAIM',
       autoClaimValueKind: 'FIXED',
       autoClaimAmount: '0',
-    }))).rejects.toThrow('at least $0.01');
+    }))).resolves.toEqual({
+      success: false,
+      error: expect.stringContaining('at least $0.01'),
+    });
     expect(preferenceFindFirst).not.toHaveBeenCalled();
   });
 });
@@ -274,7 +295,7 @@ describe('updateBenefitTrackingPreferenceAction', () => {
 describe('resetBenefitTrackingPreferenceAction', () => {
   it('delegates one-click reset through the same TRACK transaction owner', async () => {
     const result = await resetBenefitTrackingPreferenceAction(form({ preferenceId: 'pref-1' }));
-    expect(result).toEqual({ success: true });
+    expect(result).toEqual({ success: true, configuration: { mode: 'TRACK' } });
     expect(mockApplyConfiguration).toHaveBeenCalledWith(prisma, expect.objectContaining({
       userId: 'user-1',
       expectedPreferenceId: 'pref-1',
@@ -290,15 +311,18 @@ describe('resetBenefitTrackingPreferenceAction', () => {
   it('refuses unauthenticated, missing-id, and foreign resets', async () => {
     mockGetServerSession.mockResolvedValueOnce(null);
     await expect(resetBenefitTrackingPreferenceAction(form({ preferenceId: 'pref-1' })))
-      .rejects.toThrow('User not authenticated');
+      .resolves.toEqual({ success: false, error: 'User not authenticated.' });
 
     mockGetServerSession.mockResolvedValueOnce(SESSION);
     await expect(resetBenefitTrackingPreferenceAction(form({})))
-      .rejects.toThrow('Preference ID is missing');
+      .resolves.toEqual({ success: false, error: 'Preference ID is missing.' });
 
     preferenceFindFirst.mockResolvedValueOnce(null);
     await expect(resetBenefitTrackingPreferenceAction(form({ preferenceId: 'foreign-pref' })))
-      .rejects.toThrow('Tracking preference not found or permission denied');
+      .resolves.toEqual({
+        success: false,
+        error: 'Tracking preference not found or permission denied.',
+      });
     expect(mockApplyConfiguration).not.toHaveBeenCalled();
   });
 });

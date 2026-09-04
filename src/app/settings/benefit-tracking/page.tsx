@@ -55,6 +55,7 @@ export default async function BenefitTrackingSettingsPage() {
           maxAmount: true,
           frequency: true,
           occurrencesInCycle: true,
+          creditCard: { select: { name: true, nickname: true, lastFourDigits: true } },
         },
       },
     },
@@ -67,7 +68,7 @@ export default async function BenefitTrackingSettingsPage() {
     if (configuration.mode === 'TRACK') {
       throw new Error('Unexpected normal-tracking preference in settings query.');
     }
-    const card = preference.creditCard;
+    const card = preference.creditCard ?? preference.benefit?.creditCard;
     const cardLabel = card
       ? [card.nickname || card.name, card.lastFourDigits ? `••${card.lastFourDigits}` : null]
           .filter(Boolean)

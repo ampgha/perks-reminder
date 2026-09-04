@@ -41,7 +41,7 @@ describe('BenefitTrackingEditor', () => {
     );
 
     fireEvent.click(screen.getByRole('radio', { name: /Claim automatically/i }));
-    fireEvent.click(screen.getByRole('radio', { name: /A partial amount/i }));
+    fireEvent.click(screen.getByRole('radio', { name: /Custom tracked value/i }));
     fireEvent.change(screen.getByLabelText(/Tracked value per occurrence/i), {
       target: { value: '15' },
     });
@@ -94,7 +94,7 @@ describe('BenefitTrackingEditor', () => {
     );
 
     fireEvent.click(screen.getByRole('radio', { name: /Claim automatically/i }));
-    expect(screen.queryByRole('radio', { name: /A partial amount/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('radio', { name: /Custom tracked value/i })).not.toBeInTheDocument();
     expect(screen.getByText(/contribute \$0\.00 toward ROI/i)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /Save tracking choice/i }));
 

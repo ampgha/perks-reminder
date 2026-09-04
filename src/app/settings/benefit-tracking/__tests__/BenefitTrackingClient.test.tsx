@@ -7,8 +7,14 @@ import {
 import BenefitTrackingClient, { type TrackedBenefitPreference } from '../BenefitTrackingClient';
 
 jest.mock('@/app/benefits/actions', () => ({
-  resetBenefitTrackingPreferenceAction: jest.fn().mockResolvedValue({ success: true }),
-  updateBenefitTrackingPreferenceAction: jest.fn().mockResolvedValue({ success: true }),
+  resetBenefitTrackingPreferenceAction: jest.fn().mockResolvedValue({
+    success: true,
+    configuration: { mode: 'TRACK' },
+  }),
+  updateBenefitTrackingPreferenceAction: jest.fn().mockResolvedValue({
+    success: true,
+    configuration: { mode: 'AUTO_CLAIM', value: { kind: 'FULL' } },
+  }),
 }));
 
 const fixedPreference: TrackedBenefitPreference = {
@@ -99,7 +105,7 @@ describe('BenefitTrackingClient', () => {
     expect(screen.getByText('Auto: claimed')).toBeInTheDocument();
     expect(screen.getByText(/contributes \$0\.00 toward ROI/i)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
-    expect(screen.queryByRole('radio', { name: /A partial amount/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('radio', { name: /Custom tracked value/i })).not.toBeInTheDocument();
   });
 
   it('warns when a saved fixed value is capped by a reduced benefit maximum', () => {
@@ -116,8 +122,10 @@ describe('BenefitTrackingClient', () => {
     const action = updateBenefitTrackingPreferenceAction as jest.MockedFunction<
       typeof updateBenefitTrackingPreferenceAction
     >;
-    action.mockRejectedValueOnce(new Error('The benefit value changed. Try again.'));
-    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    action.mockResolvedValueOnce({
+      success: false,
+      error: 'The benefit value changed. Try again.',
+    });
     render(<BenefitTrackingClient preferences={[fixedPreference]} />);
 
     fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
@@ -130,7 +138,6 @@ describe('BenefitTrackingClient', () => {
     );
     expect(amount).toHaveValue('10');
     expect(screen.getByRole('button', { name: /Save preference/i })).toBeEnabled();
-    consoleError.mockRestore();
   });
 
   it('can edit an ignored benefit that is absent from the dashboard', () => {

@@ -16,6 +16,7 @@ import {
   type DisplayBenefitStatus,
 } from '@/lib/benefit-dashboard-client';
 import {
+  benefitTrackingKey,
   initialStatusFieldsForTrackingConfiguration,
   type BenefitTrackingConfiguration,
 } from '@/lib/benefit-tracking-modes';
@@ -204,96 +205,110 @@ export default function BenefitsDisplayClient({
     previousConfiguration: BenefitTrackingConfiguration,
     configuration: BenefitTrackingConfiguration,
   ) => {
-    const upcoming = localUpcomingBenefits.find((benefit) => benefit.id === statusId);
-    const completed = localCompletedBenefits.find((benefit) => benefit.id === statusId);
-    const ignored = localIgnoredBenefits.find((benefit) => benefit.id === statusId);
-    const scheduled = localScheduledBenefits.find((benefit) => benefit.id === statusId);
-    const status = upcoming ?? completed ?? ignored ?? scheduled;
-    if (!status) return;
+    const allStatuses = [
+      ...localUpcomingBenefits,
+      ...localCompletedBenefits,
+      ...localIgnoredBenefits,
+      ...localScheduledBenefits,
+    ];
+    const selectedStatus = allStatuses.find((benefit) => benefit.id === statusId);
+    if (!selectedStatus) return;
+    const targetKey = benefitTrackingKey({
+      creditCardId: selectedStatus.predefinedBenefitId
+        ? selectedStatus.creditCardId ?? selectedStatus.benefit.creditCard?.id ?? null
+        : null,
+      predefinedBenefitId: selectedStatus.predefinedBenefitId ?? null,
+      benefitId: selectedStatus.predefinedBenefitId ? null : selectedStatus.benefitId,
+    });
+    if (!targetKey) return;
 
+    const nextUpcoming: DisplayBenefitStatus[] = [];
+    const nextCompleted: DisplayBenefitStatus[] = [];
+    const nextIgnored: DisplayBenefitStatus[] = [];
+    const nextScheduled: DisplayBenefitStatus[] = [];
     const now = new Date();
-    const cycleStart = new Date(status.cycleStartDate).getTime();
-    const cycleEnd = new Date(status.cycleEndDate).getTime();
-    const cycleIsOpen = cycleStart <= now.getTime() && cycleEnd >= now.getTime();
-    const isVirgin = status.claimSource == null
-      && !status.isCompleted
-      && !status.isNotUsable
-      && Math.max(0, status.usedAmount ?? 0) === 0;
+    for (const status of allStatuses) {
+      const statusKey = benefitTrackingKey({
+        creditCardId: status.predefinedBenefitId
+          ? status.creditCardId ?? status.benefit.creditCard?.id ?? null
+          : null,
+        predefinedBenefitId: status.predefinedBenefitId ?? null,
+        benefitId: status.predefinedBenefitId ? null : status.benefitId,
+      });
+      if (statusKey !== targetKey) {
+        if (localUpcomingBenefits.some((item) => item.id === status.id)) nextUpcoming.push(status);
+        else if (localCompletedBenefits.some((item) => item.id === status.id)) nextCompleted.push(status);
+        else if (localIgnoredBenefits.some((item) => item.id === status.id)) nextIgnored.push(status);
+        else nextScheduled.push(status);
+        continue;
+      }
 
-    let nextStatus: DisplayBenefitStatus = {
-      ...status,
-      trackingConfiguration: configuration,
-    };
+      const cycleStart = new Date(status.cycleStartDate).getTime();
+      const cycleEnd = new Date(status.cycleEndDate).getTime();
+      const cycleIsOpen = cycleStart <= now.getTime() && cycleEnd >= now.getTime();
+      const isVirgin = status.claimSource == null
+        && !status.isCompleted
+        && !status.isNotUsable
+        && Math.max(0, status.usedAmount ?? 0) === 0;
+      let nextStatus: DisplayBenefitStatus = {
+        ...status,
+        trackingConfiguration: configuration,
+      };
 
-    if (
-      configuration.mode === 'AUTO_CLAIM'
-      && cycleIsOpen
-      && (
-        (previousConfiguration.mode !== 'AUTO_CLAIM' && !status.isCompleted)
-        || (previousConfiguration.mode === 'AUTO_CLAIM'
-          && (status.claimSource === 'AUTO' || isVirgin))
-      )
-    ) {
-      nextStatus = {
-        ...nextStatus,
-        ...initialStatusFieldsForTrackingConfiguration(
-          configuration,
-          status.benefit.maxAmount,
-          now
-        ),
-        isNotUsable: false,
-      };
-    } else if (
-      previousConfiguration.mode === 'AUTO_CLAIM'
-      && configuration.mode !== 'AUTO_CLAIM'
-      && cycleIsOpen
-      && status.isCompleted
-      && status.claimSource === 'AUTO'
-    ) {
-      nextStatus = {
-        ...nextStatus,
-        isCompleted: false,
-        completedAt: null,
-        usedAmount: 0,
-        claimSource: null,
-      };
+      if (
+        configuration.mode === 'AUTO_CLAIM'
+        && cycleIsOpen
+        && (
+          (previousConfiguration.mode !== 'AUTO_CLAIM' && !status.isCompleted)
+          || (previousConfiguration.mode === 'AUTO_CLAIM'
+            && (status.claimSource === 'AUTO' || isVirgin))
+        )
+      ) {
+        nextStatus = {
+          ...nextStatus,
+          ...initialStatusFieldsForTrackingConfiguration(
+            configuration,
+            status.benefit.maxAmount,
+            now
+          ),
+          isNotUsable: false,
+        };
+      } else if (
+        previousConfiguration.mode === 'AUTO_CLAIM'
+        && configuration.mode !== 'AUTO_CLAIM'
+        && cycleIsOpen
+        && status.isCompleted
+        && status.claimSource === 'AUTO'
+      ) {
+        nextStatus = {
+          ...nextStatus,
+          isCompleted: false,
+          completedAt: null,
+          usedAmount: 0,
+          claimSource: null,
+        };
+      }
+
+      if (configuration.mode === 'IGNORE') nextIgnored.push(nextStatus);
+      else if (cycleStart > now.getTime()) nextScheduled.push(nextStatus);
+      else if (nextStatus.isCompleted) nextCompleted.push(nextStatus);
+      else if (cycleEnd >= now.getTime()) nextUpcoming.push(nextStatus);
     }
 
-    const oldUsed = upcoming || completed ? resolveBenefitClaimedValue(status) : 0;
-    const oldUnused = upcoming
-      ? Math.max(0, Math.max(0, status.benefit.maxAmount ?? 0) - oldUsed)
-      : 0;
-
-    setLocalUpcomingBenefits((items) => items.filter((item) => item.id !== statusId));
-    setLocalCompletedBenefits((items) => items.filter((item) => item.id !== statusId));
-    setLocalIgnoredBenefits((items) => items.filter((item) => item.id !== statusId));
-    setLocalScheduledBenefits((items) => items.filter((item) => item.id !== statusId));
-
-    let destination: 'upcoming' | 'completed' | 'ignored' | 'scheduled' | null = null;
-    if (configuration.mode === 'IGNORE') destination = 'ignored';
-    else if (cycleStart > now.getTime()) destination = 'scheduled';
-    else if (nextStatus.isCompleted) destination = 'completed';
-    else if (cycleEnd >= now.getTime()) destination = 'upcoming';
-    else if (scheduled) destination = 'scheduled';
-
-    if (destination === 'ignored') {
-      setLocalIgnoredBenefits((items) => [...items, nextStatus]);
-    } else if (destination === 'scheduled') {
-      setLocalScheduledBenefits((items) => [...items, nextStatus]);
-    } else if (destination === 'completed') {
-      setLocalCompletedBenefits((items) => [...items, nextStatus]);
-    } else if (destination === 'upcoming') {
-      setLocalUpcomingBenefits((items) => [...items, nextStatus]);
-    }
-
-    const newUsed = destination === 'upcoming' || destination === 'completed'
-      ? resolveBenefitClaimedValue(nextStatus)
-      : 0;
-    const newUnused = destination === 'upcoming'
-      ? Math.max(0, Math.max(0, nextStatus.benefit.maxAmount ?? 0) - newUsed)
-      : 0;
-    setLocalTotalUsedValue((value) => value + newUsed - oldUsed);
-    setLocalTotalUnusedValue((value) => value + newUnused - oldUnused);
+    setLocalUpcomingBenefits(nextUpcoming);
+    setLocalCompletedBenefits(nextCompleted);
+    setLocalIgnoredBenefits(nextIgnored);
+    setLocalScheduledBenefits(nextScheduled);
+    setLocalTotalUsedValue(
+      [...nextUpcoming, ...nextCompleted]
+        .reduce((total, status) => total + resolveBenefitClaimedValue(status), 0)
+    );
+    setLocalTotalUnusedValue(
+      nextUpcoming.reduce((total, status) => {
+        const used = resolveBenefitClaimedValue(status);
+        return total + Math.max(0, Math.max(0, status.benefit.maxAmount ?? 0) - used);
+      }, 0)
+    );
   };
 
 

@@ -878,25 +878,42 @@ async function applyOwnedTrackingPreferenceConfiguration(input: {
   });
 }
 
+export type BenefitTrackingActionResult =
+  | { success: true; configuration: BenefitTrackingConfiguration }
+  | { success: false; error: string };
+
+function trackingActionError(
+  error: unknown,
+  fallback: string,
+  logContext: string
+): { success: false; error: string } {
+  if (error instanceof BenefitTrackingConfigurationError) {
+    return { success: false, error: error.message };
+  }
+  console.error(logContext, error);
+  return { success: false, error: fallback };
+}
+
 /** Set the complete tracking configuration from an owned status/card surface. */
-export async function setBenefitTrackingModeAction(formData: FormData) {
+export async function setBenefitTrackingModeAction(
+  formData: FormData
+): Promise<BenefitTrackingActionResult> {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
-    throw new Error('User not authenticated.');
-  }
-  const userId = session.user.id;
-  const benefitStatusId = formData.get('benefitStatusId');
-  if (typeof benefitStatusId !== 'string' || benefitStatusId.length === 0) {
-    throw new Error('Benefit Status ID is missing.');
-  }
-  const configuration = parseTrackingConfiguration(formData);
-
-  const status = await findEffectiveBenefitStatus(prisma, userId, benefitStatusId);
-  if (!status) {
-    throw new Error('Benefit status not found or permission denied.');
+    return { success: false, error: 'User not authenticated.' };
   }
 
   try {
+    const userId = session.user.id;
+    const benefitStatusId = formData.get('benefitStatusId');
+    if (typeof benefitStatusId !== 'string' || benefitStatusId.length === 0) {
+      return { success: false, error: 'Benefit Status ID is missing.' };
+    }
+    const configuration = parseTrackingConfiguration(formData);
+    const status = await findEffectiveBenefitStatus(prisma, userId, benefitStatusId);
+    if (!status) {
+      return { success: false, error: 'Benefit status not found or permission denied.' };
+    }
     const applied = await applyBenefitTrackingConfiguration(prisma, {
       userId,
       target: trackingTargetFromStatus(status),
@@ -906,25 +923,29 @@ export async function setBenefitTrackingModeAction(formData: FormData) {
     revalidateBenefitTrackingSurfaces();
     return { success: true as const, configuration: applied };
   } catch (error) {
-    if (error instanceof BenefitTrackingConfigurationError) throw error;
-    console.error('Error setting benefit tracking mode:', error);
-    throw new Error('Failed to update benefit tracking mode.');
+    return trackingActionError(
+      error,
+      'Failed to update benefit tracking mode.',
+      'Error setting benefit tracking mode:'
+    );
   }
 }
 
 /** Edit any non-default preference from the settings management surface. */
-export async function updateBenefitTrackingPreferenceAction(formData: FormData) {
+export async function updateBenefitTrackingPreferenceAction(
+  formData: FormData
+): Promise<BenefitTrackingActionResult> {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
-    throw new Error('User not authenticated.');
+    return { success: false, error: 'User not authenticated.' };
   }
-  const preferenceId = formData.get('preferenceId');
-  if (typeof preferenceId !== 'string' || preferenceId.length === 0) {
-    throw new Error('Preference ID is missing.');
-  }
-  const configuration = parseTrackingConfiguration(formData);
 
   try {
+    const preferenceId = formData.get('preferenceId');
+    if (typeof preferenceId !== 'string' || preferenceId.length === 0) {
+      return { success: false, error: 'Preference ID is missing.' };
+    }
+    const configuration = parseTrackingConfiguration(formData);
     const applied = await applyOwnedTrackingPreferenceConfiguration({
       userId: session.user.id,
       preferenceId,
@@ -933,34 +954,40 @@ export async function updateBenefitTrackingPreferenceAction(formData: FormData) 
     revalidateBenefitTrackingSurfaces();
     return { success: true as const, configuration: applied };
   } catch (error) {
-    if (error instanceof BenefitTrackingConfigurationError) throw error;
-    console.error('Error updating benefit tracking preference:', error);
-    throw new Error('Failed to update benefit tracking preference.');
+    return trackingActionError(
+      error,
+      'Failed to update benefit tracking preference.',
+      'Error updating benefit tracking preference:'
+    );
   }
 }
 
 /** One-click settings shortcut for returning to ordinary per-cycle tracking. */
-export async function resetBenefitTrackingPreferenceAction(formData: FormData) {
+export async function resetBenefitTrackingPreferenceAction(
+  formData: FormData
+): Promise<BenefitTrackingActionResult> {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
-    throw new Error('User not authenticated.');
-  }
-  const preferenceId = formData.get('preferenceId');
-  if (typeof preferenceId !== 'string' || preferenceId.length === 0) {
-    throw new Error('Preference ID is missing.');
+    return { success: false, error: 'User not authenticated.' };
   }
 
   try {
+    const preferenceId = formData.get('preferenceId');
+    if (typeof preferenceId !== 'string' || preferenceId.length === 0) {
+      return { success: false, error: 'Preference ID is missing.' };
+    }
     await applyOwnedTrackingPreferenceConfiguration({
       userId: session.user.id,
       preferenceId,
       configuration: { mode: 'TRACK' },
     });
     revalidateBenefitTrackingSurfaces();
-    return { success: true as const };
+    return { success: true as const, configuration: { mode: 'TRACK' } };
   } catch (error) {
-    if (error instanceof BenefitTrackingConfigurationError) throw error;
-    console.error('Error resetting benefit tracking preference:', error);
-    throw new Error('Failed to reset benefit tracking preference.');
+    return trackingActionError(
+      error,
+      'Failed to reset benefit tracking preference.',
+      'Error resetting benefit tracking preference:'
+    );
   }
 }

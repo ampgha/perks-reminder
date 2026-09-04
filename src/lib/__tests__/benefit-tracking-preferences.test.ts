@@ -59,6 +59,7 @@ const plannedStandard = (overrides = {}) => ({
   creditCardId: 'card-1',
   predefinedBenefitId: 'pb-1',
   benefitId: null,
+  cycleStartDate: new Date('2026-08-01T00:00:00.000Z'),
   ...overrides,
 });
 
@@ -223,6 +224,26 @@ describe('applyTrackingModesToPlannedRows', () => {
       usedAmount: 10,
       claimSource: 'AUTO',
     });
+  });
+
+  it('leaves future rows unclaimed until their cycle opens', async () => {
+    const db = database(
+      [standardPreference({ mode: 'AUTO_CLAIM', autoClaimAmountCents: 1500 })],
+      { predefined: [{ id: 'pb-1', maxAmount: 25 }] }
+    );
+
+    const [defaults] = await applyTrackingModesToPlannedRows(db, [plannedStandard({
+      cycleStartDate: new Date('2026-09-01T00:00:00.000Z'),
+    })], NOW);
+
+    expect(defaults).toEqual({
+      isCompleted: false,
+      completedAt: null,
+      usedAmount: 0,
+      claimSource: null,
+    });
+    expect((db as never as { predefinedBenefit: { findMany: jest.Mock } })
+      .predefinedBenefit.findMany).not.toHaveBeenCalled();
   });
 
   it('supports fixed custom benefits and zero-value binary automatic claims', async () => {

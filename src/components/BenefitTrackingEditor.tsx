@@ -142,7 +142,7 @@ export default function BenefitTrackingEditor({
                     onChange={() => setValueKind('FULL')}
                   />
                   <span>
-                    Full tracked value — {formatTrackedCurrency(maximumCents)}
+                    Full tracked value — {formatTrackedCurrency(maximumCents)} per {cadence}
                     <span className="block text-xs text-muted-foreground">
                       Follows the benefit&apos;s current value automatically.
                     </span>
@@ -158,7 +158,7 @@ export default function BenefitTrackingEditor({
                     onChange={() => setValueKind('FIXED')}
                   />
                   <span>
-                    A partial amount
+                    Custom tracked value
                     <span className="block text-xs text-muted-foreground">
                       Count one fixed dollar value each time it is claimed.
                     </span>
