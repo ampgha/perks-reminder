@@ -4,6 +4,12 @@ High-resolution card art is usually sourced from issuer pages or community
 Apple Pay card-background captures. When replacing images from forum posts, keep
 the source URL here so future updates can verify provenance.
 
+## Official Issuer Card Art
+
+| Local image | Source |
+| --- | --- |
+| `public/images/cards/chase-marriott-bonvoy-bold.png` | https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/marriott_bonvoy_bold_card_NAF.png |
+
 ## US Card Forum Apple Pay Card Art
 
 Source thread: https://www.uscardforum.com/t/topic/29408

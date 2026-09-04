@@ -1,0 +1,48 @@
+{
+  "$schema": "../schema.json",
+  "name": "Marriott Bonvoy Bold Credit Card",
+  "issuer": "Chase",
+  "annualFee": 0,
+  "imageUrl": "/images/cards/chase-marriott-bonvoy-bold.png",
+  "sources": [
+    {
+      "label": "Chase Marriott Bonvoy Bold official product page and benefit terms",
+      "url": "https://creditcards.chase.com/travel-credit-cards/marriott-bonvoy/bold",
+      "accessed": "2026-09-04"
+    },
+    {
+      "label": "Instacart official Chase co-brand benefit page",
+      "url": "https://www.instacart.com/p/chase-cobrands",
+      "accessed": "2026-09-04"
+    },
+    {
+      "label": "Instacart Help Center Chase co-brand credit card benefit terms",
+      "url": "https://www.instacart.com/help/section/639415266/3449502464",
+      "accessed": "2026-09-04"
+    },
+    {
+      "label": "Doctor of Credit supporting report on Chase Instacart benefits",
+      "url": "https://www.doctorofcredit.com/chase-adds-instacart-credits-for-most-cards-10-20-per-month-until-12-31-27/",
+      "accessed": "2026-09-04"
+    }
+  ],
+  "benefits": [
+    {
+      "description": "$10 Quarterly DoorDash Discount (Active DashPass; Non-Restaurant Orders; through 12/31/2027)",
+      "category": "Food Delivery",
+      "maxAmount": 10,
+      "frequency": "QUARTERLY",
+      "cycleAlignment": "CALENDAR_FIXED",
+      "notes": "Requires an active DashPass membership and activation of the 12-month complimentary DashPass offer by December 31, 2027. One qualifying non-restaurant order per calendar quarter; unused value is forfeited and does not roll over."
+    },
+    {
+      "description": "$10 Monthly Instacart Credit (Active Instacart+ Required; through 12/31/2027)",
+      "category": "Food Delivery",
+      "maxAmount": 10,
+      "frequency": "MONTHLY",
+      "cycleAlignment": "CALENDAR_FIXED",
+      "notes": "Requires enrollment and an active Instacart+ membership. Chase provides three complimentary months; the monthly credit can continue with a paid or otherwise active membership through December 31, 2027. One purchase of at least $10 per calendar month; unused value is forfeited and does not roll over."
+    }
+  ],
+  "reviewNotes": "Trackable catalog scope includes only the quarterly DoorDash discount and monthly Instacart credit. Excluded as non-trackable or non-cyclical: the welcome offer, earning multipliers, Marriott Bonvoy Silver Elite status, five Elite Night Credits, complimentary subscription access itself, protections, and the Pay Yourself Back redemption cap. Global synchronization disposition: expect create actions for the new keyed card and two keyed benefits; adoption is acceptable only if a later dry-run finds an exact, bidirectionally unique unkeyed legacy match. No database synchronization is part of this change. Status materialization disposition: after a separately authorized successful sync, run insert-only materialization for missing Standard Benefit Status rows on every existing active linked Physical Card without resetting user state or cycle history. Benefit Usage Guide disposition: deferred; neither benefit has a dedicated guide, so the existing category/description fallback remains in effect. Retirement disposition: both promotions end December 31, 2027; after that date, remove them from the active static source and use these same immutable catalog keys in a reviewed synchronization that retires the definitions, creates no future statuses, and preserves prior status history."
+}
