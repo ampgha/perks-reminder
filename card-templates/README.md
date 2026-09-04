@@ -47,7 +47,8 @@ description, amount, array order, or database ID.
 - Do not model always-on access, insurance, elite status, or earning
   multipliers as recurring benefits unless product requirements change.
 - Keep `imageUrl` pointed at an existing local file when the proposal includes
-  an image, and record image provenance in the relevant documentation.
+  an image, and record image provenance in the relevant documentation. Use
+  `null` when card art is intentionally deferred; the field remains required.
 - Preserve existing `catalogKey` values. A genuinely new definition gets a new
   key; a changed or retired definition is never deleted and recreated.
 
