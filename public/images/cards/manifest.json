@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-04T09:42:26.000Z",
+  "updatedAt": "2026-09-04T09:50:06.922Z",
   "images": [
     {
       "cardName": "alaska-airlines-visa-signature-credit-card",
@@ -141,6 +141,21 @@
       "sha256": "12478bf1100e8298da7f599144ba74f207b089d1ac51caf719baef0e0285d451",
       "duplicates": [],
       "validatedAt": "2026-05-16T20:15:50.590Z"
+    },
+    {
+      "cardName": "Chase Marriott Bonvoy Bold",
+      "filename": "chase-marriott-bonvoy-bold.png",
+      "path": "/images/cards/chase-marriott-bonvoy-bold.png",
+      "source": "direct-url",
+      "sourceUrl": "https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/marriott_bonvoy_bold_card_NAF.png",
+      "width": 289,
+      "height": 181,
+      "type": "png",
+      "sizeBytes": 93028,
+      "sha256": "aae5550cad96a311364534932febb8d15644b8c2d2075209c45de1ee00baa2c0",
+      "duplicates": [],
+      "overwritten": true,
+      "ingestedAt": "2026-09-04T09:50:06.910Z"
     },
     {
       "cardName": "chase-freedom-flex",
