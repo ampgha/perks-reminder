@@ -52,7 +52,7 @@ export interface PublicStaticCard extends Omit<StaticPredefinedCard, 'benefits'>
   updatedAt: string;
 }
 
-export const STATIC_CATALOG_UPDATED_AT = '2026-08-27';
+export const STATIC_CATALOG_UPDATED_AT = '2026-09-04';
 
 export const predefinedCardsData = [
     {
@@ -93,6 +93,14 @@ export const predefinedCardsData = [
           fixedCycleDurationMonths: 48,
         },
       ],
+    },
+    {
+      catalogKey: 'card:apple-card',
+      name: 'Apple Card',
+      issuer: 'Goldman Sachs',
+      annualFee: 0,
+      imageUrl: null,
+      benefits: [],
     },
     americanExpressCardCatalog["American Express Gold Card"],
     {
