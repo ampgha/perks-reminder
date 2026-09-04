@@ -1,0 +1,31 @@
+{
+  "$schema": "../schema.json",
+  "name": "West Elm Key Rewards® Visa",
+  "issuer": "Capital One",
+  "annualFee": 0,
+  "imageUrl": "/images/cards/west-elm-key-rewards-visa.png",
+  "sources": [
+    {
+      "label": "Capital One West Elm Key Rewards Visa official product page",
+      "url": "https://www.capitalone.com/credit-cards/westelm/",
+      "accessed": "2026-09-04"
+    },
+    {
+      "label": "West Elm official Key Rewards program and birthday-certificate terms",
+      "url": "https://www.westelm.com/pages/the-key-rewards/",
+      "accessed": "2026-09-04"
+    },
+    {
+      "label": "Capital One official Key Rewards program launch and product-variant list",
+      "url": "https://www.capitalone.com/about/newsroom/key-rewards-credit-card-program/",
+      "accessed": "2026-09-04"
+    },
+    {
+      "label": "Capital One official West Elm Key Rewards Visa card agreement",
+      "url": "https://ecm.capitalone.com/WCM/card/credit-card-agreement-for-williams-sonoma-key-rewards-visa-pottery-barn-key-rewards-visa-west-elm-key-rewards-visa-key-rewards-visa-in-capital-one-na.pdf",
+      "accessed": "2026-09-04"
+    }
+  ],
+  "benefits": [],
+  "reviewNotes": "Canonical product scope: this entry is the currently marketed West Elm Key Rewards Visa issued by Capital One and usable wherever Visa is accepted. It is distinct from the private-label West Elm Key Rewards Card identified separately in the official program materials; that store-only variant is not represented by this catalog identity. Deferred/model-blocked benefit: the official $25 Birthday rewards certificate is conditional on a purchase in the 12 months before the cardholder's birthday month, is issued during that user-specific month, can be awarded only once in a 12-month period, and expires 30 days after issuance. The current standard cycle model supports card-anniversary or globally fixed calendar windows, but not a user-birthday/issuance anchor or this eligibility condition. Modeling it as an ordinary YEARLY benefit would invent incorrect cycle dates, so benefits are intentionally empty until the model supports faithful representation. Welcome rewards, ongoing earning rates, promotional financing, free shipping, early access, and other always-on features are outside trackable-benefit scope. Catalog synchronization disposition: the new immutable card key should plan as a create in a later separately authorized sync; there is no benefit definition to synchronize. Existing-card propagation disposition: no standard status should be materialized while the birthday benefit remains deferred. Benefit Usage Guide disposition: no guide link applies because no benefit is modeled. Prior-status disposition: there are no prior statuses for this genuinely new catalog identity; preserve unrelated legacy/custom rows for separate adoption review. Image provenance: official Capital One product asset at https://ecm.capitalone.com/WCM/card/products/we_ca_cb_rgb.png, accessed 2026-09-04."
+}

@@ -106,6 +106,16 @@ describe('static catalog', () => {
     ]);
   });
 
+  it('lists the West Elm Key Rewards Visa without approximating its birthday certificate', () => {
+    expect(getPublicStaticCardByName('West Elm Key Rewards® Visa')).toEqual(expect.objectContaining({
+      catalogKey: 'card:west-elm-key-rewards-visa',
+      issuer: 'Capital One',
+      annualFee: 0,
+      imageUrl: '/images/cards/west-elm-key-rewards-visa.png',
+      benefits: [],
+    }));
+  });
+
   it('keeps annual value and suggestions available without a database', () => {
     expect(calculateAnnualBenefitValue(10, 'MONTHLY')).toBe(120);
     expect(getStaticSearchSuggestions()).toEqual(expect.arrayContaining(['American Express', 'Dining', 'amex']));

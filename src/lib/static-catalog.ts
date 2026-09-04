@@ -139,6 +139,16 @@ export const predefinedCardsData = [
       ],
     },
     {
+      catalogKey: 'card:west-elm-key-rewards-visa',
+      name: 'West Elm Key Rewards® Visa',
+      issuer: 'Capital One',
+      annualFee: 0,
+      imageUrl: '/images/cards/west-elm-key-rewards-visa.png',
+      // The $25 birthday certificate needs a user-birthday/issuance cycle anchor,
+      // which the standard catalog model cannot currently represent faithfully.
+      benefits: [],
+    },
+    {
       catalogKey: 'card:csr',
       name: 'Chase Sapphire Reserve',
       issuer: 'Chase',
