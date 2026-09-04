@@ -73,14 +73,14 @@ describe('BenefitTrackingEditor', () => {
     fireEvent.change(input, { target: { value: '30' } });
 
     expect(onSave).not.toHaveBeenCalled();
-    expect(screen.getByRole('alert')).toHaveTextContent('cannot exceed $25.00');
+    const inlineError = screen.getByRole('alert');
+    expect(inlineError).toHaveTextContent('cannot exceed $25.00');
     expect(input).toHaveValue('30');
     expect(input).toHaveAttribute('aria-invalid', 'true');
     expect(input.parentElement).toHaveClass('border-destructive');
+    expect(input.parentElement?.nextElementSibling).toBe(inlineError);
     expect(screen.getByRole('button', { name: /Save tracking choice/i })).toBeDisabled();
-    expect(input.getAttribute('aria-describedby')).toContain(
-      screen.getByRole('alert').id
-    );
+    expect(input.getAttribute('aria-describedby')).toContain(inlineError.id);
 
     fireEvent.change(input, { target: { value: '20' } });
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();

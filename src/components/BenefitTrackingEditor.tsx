@@ -70,8 +70,9 @@ export default function BenefitTrackingEditor({
     ? fixedAmountValidation.message
     : null;
   const hasInvalidFixedAmount = fixedAmountValidation?.valid === false;
-  const errorMessage = fixedAmountError ?? localError ?? error;
-  const errorId = `${id}-error`;
+  const formErrorMessage = localError ?? error;
+  const formErrorId = `${id}-form-error`;
+  const fixedAmountErrorId = `${id}-fixed-amount-error`;
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -103,7 +104,7 @@ export default function BenefitTrackingEditor({
     <form onSubmit={handleSubmit} className="space-y-4">
       <fieldset
         disabled={isPending}
-        aria-describedby={errorMessage ? errorId : undefined}
+        aria-describedby={formErrorMessage ? formErrorId : undefined}
         className="space-y-2"
       >
         <legend className="text-sm font-semibold text-foreground">
@@ -213,13 +214,22 @@ export default function BenefitTrackingEditor({
                         }}
                         onBlur={() => setFixedAmountTouched(true)}
                         aria-invalid={Boolean(fixedAmountError)}
-                        aria-describedby={`${id}-amount-help${fixedAmountError ? ` ${errorId}` : ''}`}
+                        aria-describedby={`${id}-amount-help${fixedAmountError ? ` ${fixedAmountErrorId}` : ''}`}
                         className={`min-w-0 flex-1 bg-transparent px-1 py-2 text-sm outline-none ${
                           fixedAmountError ? 'text-red-700 dark:text-red-300' : 'text-foreground'
                         }`}
                         placeholder="0.00"
                       />
                     </div>
+                    {fixedAmountError && (
+                      <p
+                        id={fixedAmountErrorId}
+                        role="alert"
+                        className="mt-1 text-xs text-red-700 dark:text-red-300"
+                      >
+                        {fixedAmountError}
+                      </p>
+                    )}
                     <p id={`${id}-amount-help`} className="mt-1 text-xs text-muted-foreground">
                       {`Enter $0.01–${formatTrackedCurrency(maximumCents)}. This closes the ${cadence} but counts only this amount toward ROI.`}
                     </p>
@@ -253,9 +263,9 @@ export default function BenefitTrackingEditor({
         </label>
       </fieldset>
 
-      {errorMessage && (
-        <p id={errorId} role="alert" className="rounded-md bg-red-50 p-2 text-xs text-red-700 dark:bg-red-950/30 dark:text-red-300">
-          {errorMessage}
+      {formErrorMessage && (
+        <p id={formErrorId} role="alert" className="rounded-md bg-red-50 p-2 text-xs text-red-700 dark:bg-red-950/30 dark:text-red-300">
+          {formErrorMessage}
         </p>
       )}
 
