@@ -9,8 +9,8 @@ function copyCatalog(): StaticPredefinedCard[] {
 describe("global static catalog validation", () => {
   it("validates every explicit identity and preserves AMEX invariants", () => {
     expect(validateStaticCatalog(predefinedCardsData)).toEqual({
-      cards: 46,
-      benefits: 139,
+      cards: 47,
+      benefits: 140,
       amexCards: 12,
       amexBenefits: 56,
       amexWritableBenefits: 47,
@@ -26,7 +26,7 @@ describe("global static catalog validation", () => {
     card.benefits[0].description = "Rewritten current benefit terms";
     card.benefits = [...card.benefits].reverse();
 
-    expect(validateStaticCatalog(catalog)).toEqual(expect.objectContaining({ cards: 46, benefits: 139 }));
+    expect(validateStaticCatalog(catalog)).toEqual(expect.objectContaining({ cards: 47, benefits: 140 }));
     expect(card.catalogKey).toBe(originalCardKey);
     expect(card.benefits.map((benefit) => benefit.catalogKey).sort()).toEqual(originalBenefitKeys);
   });
@@ -57,6 +57,26 @@ describe("global static catalog validation", () => {
       annualFee: 0,
       imageUrl: "/images/cards/capital-one-savor-cash-rewards-credit-card.png",
       benefits: [],
+    });
+  });
+
+  it("models the finite Ink Business Unlimited Instacart promotion as a conditional monthly credit", () => {
+    expect(predefinedCardsData.find((card) => card.catalogKey === "card:ink-business-unlimited")).toEqual({
+      catalogKey: "card:ink-business-unlimited",
+      name: "Ink Business Unlimited Credit Card",
+      issuer: "Chase",
+      annualFee: 0,
+      imageUrl: "/images/cards/ink-business-unlimited-credit-card.png",
+      benefits: [{
+        catalogKey: "benefit:ink-business-unlimited:20-monthly-instacart-credit-through-2027",
+        parentCatalogKey: "card:ink-business-unlimited",
+        description: "$20 Monthly Instacart Credit (active Instacart+ membership required; through 12/31/2027)",
+        category: "Food Delivery",
+        maxAmount: 20,
+        frequency: "MONTHLY",
+        cycleAlignment: "CALENDAR_FIXED",
+        percentage: 0,
+      }],
     });
   });
 

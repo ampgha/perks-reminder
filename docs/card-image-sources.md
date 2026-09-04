@@ -12,6 +12,7 @@ the source URL here so future updates can verify provenance.
 | `public/images/cards/chase-marriott-bonvoy-bold.png` | https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/marriott_bonvoy_bold_card_NAF.png |
 | `public/images/cards/capital-one-savor-cash-rewards-credit-card.png` | https://ecm.capitalone.com/WCM/card/products/new-savor-card-art/mobile.png |
 | `public/images/cards/chase-world-of-hyatt.png` | https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/world_of_hyatt_card.png |
+| `public/images/cards/ink-business-unlimited-credit-card.png` | https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/ink_unlimited_card.png |
 
 ## Card-network-hosted art
 

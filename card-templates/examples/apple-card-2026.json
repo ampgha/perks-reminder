@@ -3,7 +3,7 @@
   "name": "Apple Card",
   "issuer": "Goldman Sachs",
   "annualFee": 0,
-  "imageUrl": "/images/cards/apple-card.jpg",
+  "imageUrl": null,
   "sources": [
     {
       "label": "Apple Card official product page",
@@ -17,5 +17,5 @@
     }
   ],
   "benefits": [],
-  "reviewNotes": "Apple Card is issued by Goldman Sachs Bank USA and has no annual fee. It has no recurring trackable credits under the Catalog rules: Daily Cash is uncapped purchase-based earning, while Apple Card Monthly Installments and payment tools are financing or account features. A local image is intentionally deferred because Apple's current standalone official card photo is a front/back composite containing a sample cardholder name; the imageUrl records the intended future local path without adding unsuitable artwork. Global synchronization disposition: create one new card definition and no benefit definitions. Existing-card status propagation and Benefit Usage Guide linkage are not applicable because this card has no catalog benefits. No database synchronization or materialization is part of this proposal."
+  "reviewNotes": "Apple Card is issued by Goldman Sachs Bank USA and has no annual fee. It has no recurring trackable credits under the Catalog rules: Daily Cash is uncapped purchase-based earning, while Apple Card Monthly Installments and payment tools are financing or account features. A local image is intentionally deferred because Apple's current standalone official card photo is a front/back composite containing a sample cardholder name, so imageUrl is null rather than referencing an absent or unsuitable asset. Global synchronization disposition: create one new card definition and no benefit definitions. Existing-card status propagation and Benefit Usage Guide linkage are not applicable because this card has no catalog benefits. No database synchronization or materialization is part of this proposal."
 }

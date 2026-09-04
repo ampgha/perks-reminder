@@ -83,8 +83,8 @@ describe("global catalog synchronization", () => {
     const existing = snapshot();
     const plan = planCatalogSynchronization({ source: predefinedCardsData, snapshot: existing });
     expect(summarizeCatalogSyncPlan(plan)).toEqual({
-      cards: { create: 0, adopt: 0, update: 0, retire: 0, unchanged: 46 },
-      benefits: { create: 0, adopt: 0, update: 0, retire: 0, unchanged: 139 },
+      cards: { create: 0, adopt: 0, update: 0, retire: 0, unchanged: 47 },
+      benefits: { create: 0, adopt: 0, update: 0, retire: 0, unchanged: 140 },
       conflictCount: 0,
     });
     expect(plan.cards.filter((action) => action.existing).map((action) => action.existing!.id))
@@ -97,8 +97,8 @@ describe("global catalog synchronization", () => {
     existing.benefits.forEach((benefit) => { benefit.catalogKey = null; });
     const plan = planCatalogSynchronization({ source: predefinedCardsData, snapshot: existing });
     expect(summarizeCatalogSyncPlan(plan)).toEqual(expect.objectContaining({
-      cards: expect.objectContaining({ adopt: 46, create: 0 }),
-      benefits: expect.objectContaining({ adopt: 139, create: 0 }),
+      cards: expect.objectContaining({ adopt: 47, create: 0 }),
+      benefits: expect.objectContaining({ adopt: 140, create: 0 }),
       conflictCount: 0,
     }));
   });
@@ -263,7 +263,7 @@ describe("global catalog synchronization", () => {
     const report = await runGlobalCatalogSyncOperator({ source: predefinedCardsData, database: client });
     expect(report).toEqual(expect.objectContaining({
       mode: "dry-run",
-      source: { cards: 46, benefits: 139 },
+      source: { cards: 47, benefits: 140 },
       plan: expect.objectContaining({ conflictCount: 0 }),
     }));
     expect(client.predefinedCard.create).not.toHaveBeenCalled();
@@ -305,11 +305,11 @@ describe("global catalog synchronization", () => {
       confirmApply: GLOBAL_CATALOG_SYNC_CONFIRMATION,
       now: UPDATED_AT,
     });
-    expect(report.plan.cards.create).toBe(46);
-    expect(report.plan.benefits.create).toBe(139);
+    expect(report.plan.cards.create).toBe(47);
+    expect(report.plan.benefits.create).toBe(140);
     expect(client.$transaction).toHaveBeenCalledWith(expect.any(Function), { isolationLevel: "Serializable" });
-    expect(client.predefinedCard.create).toHaveBeenCalledTimes(46);
-    expect(client.predefinedBenefit.create).toHaveBeenCalledTimes(139);
+    expect(client.predefinedCard.create).toHaveBeenCalledTimes(47);
+    expect(client.predefinedBenefit.create).toHaveBeenCalledTimes(140);
   });
 
   it("rechecks the complete snapshot inside the transaction before any writer call", async () => {
