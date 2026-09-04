@@ -1,6 +1,7 @@
 'use client';
 
 import { useId, useState, type FormEvent } from 'react';
+import { validateDollarAmountInput } from '@/lib/currency-input';
 import {
   formatTrackedCurrency,
   normalizeTrackedMaximumCents,
@@ -48,15 +49,33 @@ export default function BenefitTrackingEditor({
     initialValueKind(initialConfiguration)
   );
   const [fixedAmount, setFixedAmount] = useState(initialFixedAmount(initialConfiguration));
+  const [fixedAmountTouched, setFixedAmountTouched] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const maximumCents = normalizeTrackedMaximumCents(maxAmount);
   const hasTrackedDollarValue = maximumCents > 0;
   const cadence = (occurrencesInCycle ?? 1) > 1 ? 'occurrence' : 'cycle';
-  const errorMessage = localError ?? error;
+  const requiresFixedAmount = mode === 'AUTO_CLAIM'
+    && hasTrackedDollarValue
+    && valueKind === 'FIXED';
+  const fixedAmountValidation = requiresFixedAmount
+    ? validateDollarAmountInput(fixedAmount, {
+        minimumCents: 1,
+        maximumCents,
+        fieldLabel: 'Custom tracked value',
+      })
+    : null;
+  const fixedAmountError = fixedAmountTouched
+    && fixedAmountValidation
+    && !fixedAmountValidation.valid
+    ? fixedAmountValidation.message
+    : null;
+  const hasInvalidFixedAmount = fixedAmountValidation?.valid === false;
+  const errorMessage = fixedAmountError ?? localError ?? error;
   const errorId = `${id}-error`;
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setFixedAmountTouched(true);
     try {
       const configuration = parseBenefitTrackingConfigurationInput({
         trackingMode: mode,
@@ -173,7 +192,13 @@ export default function BenefitTrackingEditor({
                     >
                       Tracked value per {cadence}
                     </label>
-                    <div className="flex max-w-48 items-center rounded-md border border-input bg-background px-3 focus-within:ring-2 focus-within:ring-ring">
+                    <div
+                      className={`flex max-w-48 items-center rounded-md border bg-background px-3 focus-within:ring-2 ${
+                        fixedAmountError
+                          ? 'border-destructive focus-within:ring-destructive/30'
+                          : 'border-input focus-within:ring-ring'
+                      }`}
+                    >
                       <span aria-hidden="true" className="text-muted-foreground">$</span>
                       <input
                         id={`${id}-fixed-amount`}
@@ -181,16 +206,22 @@ export default function BenefitTrackingEditor({
                         inputMode="decimal"
                         autoComplete="off"
                         value={fixedAmount}
-                        onChange={(event) => setFixedAmount(event.target.value)}
-                        aria-invalid={Boolean(errorMessage)}
-                        aria-describedby={`${id}-amount-help${errorMessage ? ` ${errorId}` : ''}`}
-                        className="min-w-0 flex-1 bg-transparent px-1 py-2 text-sm text-foreground outline-none"
+                        onChange={(event) => {
+                          setFixedAmount(event.target.value);
+                          setFixedAmountTouched(true);
+                          setLocalError(null);
+                        }}
+                        onBlur={() => setFixedAmountTouched(true)}
+                        aria-invalid={Boolean(fixedAmountError)}
+                        aria-describedby={`${id}-amount-help${fixedAmountError ? ` ${errorId}` : ''}`}
+                        className={`min-w-0 flex-1 bg-transparent px-1 py-2 text-sm outline-none ${
+                          fixedAmountError ? 'text-red-700 dark:text-red-300' : 'text-foreground'
+                        }`}
                         placeholder="0.00"
                       />
                     </div>
                     <p id={`${id}-amount-help`} className="mt-1 text-xs text-muted-foreground">
-                      Enter $0.01–{formatTrackedCurrency(maximumCents)}. This closes the {cadence}
-                      but counts only this amount toward ROI.
+                      {`Enter $0.01–${formatTrackedCurrency(maximumCents)}. This closes the ${cadence} but counts only this amount toward ROI.`}
                     </p>
                   </div>
                 )}
@@ -239,7 +270,7 @@ export default function BenefitTrackingEditor({
         </button>
         <button
           type="submit"
-          disabled={isPending}
+          disabled={isPending || hasInvalidFixedAmount}
           className="min-h-10 rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isPending ? 'Saving…' : submitLabel}

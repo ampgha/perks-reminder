@@ -71,15 +71,44 @@ describe('BenefitTrackingEditor', () => {
     const input = screen.getByLabelText(/Tracked value per cycle/i);
     expect(input).toHaveValue('15.00');
     fireEvent.change(input, { target: { value: '30' } });
-    fireEvent.click(screen.getByRole('button', { name: /Save tracking choice/i }));
 
     expect(onSave).not.toHaveBeenCalled();
     expect(screen.getByRole('alert')).toHaveTextContent('cannot exceed $25.00');
     expect(input).toHaveValue('30');
     expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(input.parentElement).toHaveClass('border-destructive');
+    expect(screen.getByRole('button', { name: /Save tracking choice/i })).toBeDisabled();
     expect(input.getAttribute('aria-describedby')).toContain(
       screen.getByRole('alert').id
     );
+
+    fireEvent.change(input, { target: { value: '20' } });
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(input).toHaveAttribute('aria-invalid', 'false');
+    expect(input.parentElement).toHaveClass('border-input');
+    expect(screen.getByRole('button', { name: /Save tracking choice/i })).toBeEnabled();
+  });
+
+  it('immediately flags fixed values below one cent', () => {
+    render(
+      <BenefitTrackingEditor
+        initialConfiguration={{ mode: 'TRACK' }}
+        maxAmount={25}
+        onSave={jest.fn()}
+        onCancel={jest.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('radio', { name: /Claim automatically/i }));
+    fireEvent.click(screen.getByRole('radio', { name: /Custom tracked value/i }));
+    const input = screen.getByLabelText(/Tracked value per cycle/i);
+    fireEvent.change(input, { target: { value: '0' } });
+
+    expect(screen.getByRole('alert')).toHaveTextContent('must be at least $0.01');
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByRole('button', { name: /Save tracking choice/i })).toBeDisabled();
+    expect(screen.getByText(/This closes the cycle but counts only this amount toward ROI\./))
+      .toBeInTheDocument();
   });
 
   it('uses binary claimed status with zero ROI for non-dollar benefits', () => {

@@ -21,6 +21,7 @@ import type {
   BenefitStatusClaimSource,
   BenefitTrackingMode as PersistedBenefitTrackingMode,
 } from '@/generated/prisma';
+import { validateDollarAmountInput } from '@/lib/currency-input';
 
 export type BenefitTrackingMode = PersistedBenefitTrackingMode;
 export type AutoClaimValueKind = 'FULL' | 'FIXED';
@@ -200,28 +201,22 @@ export function benefitTrackingConfigurationsEqual(
 
 /** Strictly parse an entered USD decimal without parseFloat-style prefixes. */
 export function parseDollarAmountToCents(value: unknown): number {
-  if (typeof value !== 'string') {
-    throw new BenefitTrackingConfigurationError('Enter a valid dollar amount.');
+  const result = validateDollarAmountInput(value, {
+    minimumCents: 1,
+    maximumCents: MAX_PERSISTED_AUTO_CLAIM_AMOUNT_CENTS,
+    fieldLabel: 'Custom tracked value',
+  });
+  if (!result.valid) {
+    let message = result.message;
+    if (result.code === 'ABOVE_MAXIMUM') {
+      message = 'Enter a smaller dollar amount.';
+    } else if (result.code === 'INVALID' && typeof value === 'string') {
+      // Preserve the existing server-action error contract for malformed form input.
+      message = 'Enter a dollar amount with no more than two decimal places.';
+    }
+    throw new BenefitTrackingConfigurationError(message);
   }
-  const match = /^(0|[1-9]\d*)(?:\.(\d{1,2}))?$/.exec(value.trim());
-  if (!match) {
-    throw new BenefitTrackingConfigurationError(
-      'Enter a dollar amount with no more than two decimal places.'
-    );
-  }
-  const whole = Number(match[1]);
-  const fractional = Number((match[2] ?? '').padEnd(2, '0'));
-  if (!Number.isSafeInteger(whole) || whole > Math.floor(Number.MAX_SAFE_INTEGER / 100)) {
-    throw new BenefitTrackingConfigurationError('Enter a smaller dollar amount.');
-  }
-  const cents = whole * 100 + fractional;
-  if (!Number.isSafeInteger(cents) || cents <= 0) {
-    throw new BenefitTrackingConfigurationError('Custom tracked value must be at least $0.01.');
-  }
-  if (cents > MAX_PERSISTED_AUTO_CLAIM_AMOUNT_CENTS) {
-    throw new BenefitTrackingConfigurationError('Enter a smaller dollar amount.');
-  }
-  return cents;
+  return result.amountCents;
 }
 
 export function parseBenefitTrackingConfigurationInput(input: {
