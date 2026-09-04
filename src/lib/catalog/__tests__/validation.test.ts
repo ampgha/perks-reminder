@@ -9,7 +9,7 @@ function copyCatalog(): StaticPredefinedCard[] {
 describe("global static catalog validation", () => {
   it("validates every explicit identity and preserves AMEX invariants", () => {
     expect(validateStaticCatalog(predefinedCardsData)).toEqual({
-      cards: 37,
+      cards: 38,
       benefits: 134,
       amexCards: 12,
       amexBenefits: 56,
@@ -26,9 +26,20 @@ describe("global static catalog validation", () => {
     card.benefits[0].description = "Rewritten current benefit terms";
     card.benefits = [...card.benefits].reverse();
 
-    expect(validateStaticCatalog(catalog)).toEqual(expect.objectContaining({ cards: 37, benefits: 134 }));
+    expect(validateStaticCatalog(catalog)).toEqual(expect.objectContaining({ cards: 38, benefits: 134 }));
     expect(card.catalogKey).toBe(originalCardKey);
     expect(card.benefits.map((benefit) => benefit.catalogKey).sort()).toEqual(originalBenefitKeys);
+  });
+
+  it("includes Apple Card without modeling uncapped Daily Cash as a recurring benefit", () => {
+    expect(predefinedCardsData.find((card) => card.catalogKey === "card:apple-card")).toEqual({
+      catalogKey: "card:apple-card",
+      name: "Apple Card",
+      issuer: "Goldman Sachs",
+      annualFee: 0,
+      imageUrl: null,
+      benefits: [],
+    });
   });
 
   it("matches AMEX rows by key after source order changes", () => {
