@@ -4,6 +4,12 @@ High-resolution card art is usually sourced from issuer pages or community
 Apple Pay card-background captures. When replacing images from forum posts, keep
 the source URL here so future updates can verify provenance.
 
+## Issuer-hosted card art
+
+| Local image | Source |
+| --- | --- |
+| `public/images/cards/city-national-cash-back-credit-card.jpg` | https://www.cnb.com/content/cnb/en/personal-banking/lending/credit-cards/cash-back.thumb.800.480.png |
+
 ## US Card Forum Apple Pay Card Art
 
 Source thread: https://www.uscardforum.com/t/topic/29408

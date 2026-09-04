@@ -52,7 +52,7 @@ export interface PublicStaticCard extends Omit<StaticPredefinedCard, 'benefits'>
   updatedAt: string;
 }
 
-export const STATIC_CATALOG_UPDATED_AT = '2026-08-27';
+export const STATIC_CATALOG_UPDATED_AT = '2026-09-04';
 
 export const predefinedCardsData = [
     {
@@ -966,6 +966,14 @@ export const predefinedCardsData = [
           fixedCycleDurationMonths: 48, // 4 years
         },
       ],
+    },
+    {
+      catalogKey: 'card:city-national-cash-back',
+      name: 'City National Cash Back Credit Card',
+      issuer: 'City National Bank',
+      annualFee: 0,
+      imageUrl: '/images/cards/city-national-cash-back-credit-card.jpg',
+      benefits: [],
     },
     {
       catalogKey: 'card:bilt-blue',
